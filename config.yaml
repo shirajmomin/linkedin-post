@@ -1,0 +1,12 @@
+# LinkedIn Post Agent configuration
+
+email:
+  enabled: true
+  subject_prefix: "[LinkedIn Agent]"
+  smtp_host: smtp.gmail.com
+  smtp_port: 587
+
+schedule:
+  # Prefer Windows Task Scheduler for production
+  daily_at: "08:30"
+  timezone: "America/New_York"

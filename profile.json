@@ -1,0 +1,29 @@
+{
+  "name": "Shiraj Momin",
+  "headline": "Healthcare Technology Leader | Solution Architect | Technical Manager",
+  "summary": "Experienced healthcare technology professional with expertise in HL7 FHIR, CMS interoperability compliance, Patient Access APIs, Provider Directory APIs, and CMS-0057-F Prior Authorization solutions (CRD, DTR, PAS). Proven track record leading cross-functional teams, defining solution architecture, managing healthcare integrations, and delivering enterprise-scale interoperability platforms for Medicare and commercial payer organizations. Skilled in API strategy, Azure cloud architecture, healthcare data exchange, and technical program leadership.",
+  "linkedin_url": "https://www.linkedin.com/in/shiraj-momin-25610232/",
+  "skills": [
+    "HL7 FHIR",
+    "FHIR Architecture",
+    "CMS-0057-F",
+    "Patient Access API",
+    "Provider Directory API",
+    "Prior Authorization API",
+    "CRD",
+    "DTR",
+    "PAS",
+    "Healthcare Interoperability",
+    "CMS Interoperability Rules",
+    "Medicare",
+    "Medicaid",
+    "Healthcare Payer Systems",
+    "Azure",
+    "API Management",
+    "Solution Architecture",
+    "Technical Leadership"
+  ],
+  "email": {
+    "to": "momin.shiraj440@gmail.com"
+  }
+}

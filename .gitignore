@@ -1,0 +1,5 @@
+.venv/
+.env
+__pycache__/
+*.pyc
+# drafts/ and data/post_history.json are written by GitHub Actions and may be committed by the workflow
