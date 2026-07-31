@@ -1,20 +1,6 @@
 {
   "used_topics": [
-    "HL7 FHIR R4 resource modeling \u2014 why clean profiles beat one-off extensions",
-    "CMS Patient Access API \u2014 what payers still get wrong about member experience",
-    "Provider Directory API \u2014 data quality as the real interoperability bottleneck",
-    "Azure API Management for FHIR APIs \u2014 auth, throttling, and observability",
-    "CMS-0057-F \u2014 PAS: designing a reliable prior-auth submission path",
-    "CMS-0057-F Prior Authorization \u2014 CRD: when coverage requirements should surface",
-    "From EDI 837/834 roots to FHIR APIs \u2014 what to keep and what to leave behind",
-    "CMS-0057-F \u2014 DTR and the documentation burden on clinicians and payers",
-    "FHIR Bulk Data / $export \u2014 practical patterns for analytics pipelines",
-    "SMART on FHIR and app launch \u2014 security tradeoffs architects must own",
-    "Medicare vs commercial payer interop \u2014 same standards, different constraints",
-    "Technical leadership on interoperability programs \u2014 sequencing delivery risk",
-    "How AI assistants change FHIR implementation work \u2014 and what still needs humans",
-    "USCDI and FHIR US Core \u2014 mapping clinical data without breaking consumers",
-    "Interoperability testing strategy \u2014 synthetic data, negative tests, and contracts"
+    "HL7 FHIR R4 resource modeling \u2014 why clean profiles beat one-off extensions"
   ],
   "posts": [
     {
@@ -163,6 +149,13 @@
       "path": "/home/runner/work/linkedin-post/linkedin-post/drafts/2026-07-31_154918.md",
       "image": "/home/runner/work/linkedin-post/linkedin-post/drafts/2026-07-31_154918.png",
       "hook": "Interop testing needs negative paths."
+    },
+    {
+      "date": "2026-07-31",
+      "topic": "HL7 FHIR R4 resource modeling \u2014 why clean profiles beat one-off extensions",
+      "path": "/home/runner/work/linkedin-post/linkedin-post/drafts/2026-07-31_155013.md",
+      "image": "/home/runner/work/linkedin-post/linkedin-post/drafts/2026-07-31_155013.png",
+      "hook": "Clean FHIR profiles beat one-off extensions."
     }
   ]
 }
