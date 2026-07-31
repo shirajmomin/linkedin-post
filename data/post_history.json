@@ -1,6 +1,7 @@
 {
   "used_topics": [
-    "HL7 FHIR R4 resource modeling \u2014 why clean profiles beat one-off extensions"
+    "HL7 FHIR R4 resource modeling \u2014 why clean profiles beat one-off extensions",
+    "CMS Patient Access API \u2014 what payers still get wrong about member experience"
   ],
   "posts": [
     {
@@ -156,6 +157,13 @@
       "path": "/home/runner/work/linkedin-post/linkedin-post/drafts/2026-07-31_155013.md",
       "image": "/home/runner/work/linkedin-post/linkedin-post/drafts/2026-07-31_155013.png",
       "hook": "Clean FHIR profiles beat one-off extensions."
+    },
+    {
+      "date": "2026-07-31",
+      "topic": "CMS Patient Access API \u2014 what payers still get wrong about member experience",
+      "path": "/home/runner/work/linkedin-post/linkedin-post/drafts/2026-07-31_155124.md",
+      "image": "/home/runner/work/linkedin-post/linkedin-post/drafts/2026-07-31_155124.png",
+      "hook": "Patient Access API gaps show up as member friction."
     }
   ]
 }
