@@ -519,17 +519,14 @@ def create_post_image(post: dict[str, Any], out_path: Path) -> Path:
     post = _enrich(post)
     layout = post["image_layout"]
 
-    scale = 2
-    out_w, out_h = 1080, 1350
-    WIDTH, HEIGHT = out_w * scale, out_h * scale
-    fonts = _fonts(scale=scale)
+    # Draw at final LinkedIn size (coordinates + fonts stay in sync)
+    WIDTH, HEIGHT = 1080, 1350
+    fonts = _fonts(scale=1)
 
     img = LAYOUTS[layout](post, fonts)
     if img.mode != "RGB":
         img = img.convert("RGB")
-    img = img.resize((out_w, out_h), Image.Resampling.LANCZOS)
 
-    WIDTH, HEIGHT = out_w, out_h
     out_path.parent.mkdir(parents=True, exist_ok=True)
     img.save(out_path, format="PNG", compress_level=4)
     print(f"[image] HUD '{layout}' saved: {out_path.name}")
