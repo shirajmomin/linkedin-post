@@ -11,7 +11,8 @@
     "FHIR Bulk Data / $export \u2014 practical patterns for analytics pipelines",
     "SMART on FHIR and app launch \u2014 security tradeoffs architects must own",
     "Medicare vs commercial payer interop \u2014 same standards, different constraints",
-    "Technical leadership on interoperability programs \u2014 sequencing delivery risk"
+    "Technical leadership on interoperability programs \u2014 sequencing delivery risk",
+    "How AI assistants change FHIR implementation work \u2014 and what still needs humans"
   ],
   "posts": [
     {
@@ -139,6 +140,13 @@
       "path": "/home/runner/work/linkedin-post/linkedin-post/drafts/2026-07-31_153855.md",
       "image": "/home/runner/work/linkedin-post/linkedin-post/drafts/2026-07-31_153855.png",
       "hook": "Interop programs fail on sequencing, not standards."
+    },
+    {
+      "date": "2026-07-31",
+      "topic": "How AI assistants change FHIR implementation work \u2014 and what still needs humans",
+      "path": "/home/runner/work/linkedin-post/linkedin-post/drafts/2026-07-31_154024.md",
+      "image": "/home/runner/work/linkedin-post/linkedin-post/drafts/2026-07-31_154024.png",
+      "hook": "AI helps FHIR work. Humans still own the contract."
     }
   ]
 }
