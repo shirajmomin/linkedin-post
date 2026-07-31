@@ -13,7 +13,8 @@
     "Medicare vs commercial payer interop \u2014 same standards, different constraints",
     "Technical leadership on interoperability programs \u2014 sequencing delivery risk",
     "How AI assistants change FHIR implementation work \u2014 and what still needs humans",
-    "USCDI and FHIR US Core \u2014 mapping clinical data without breaking consumers"
+    "USCDI and FHIR US Core \u2014 mapping clinical data without breaking consumers",
+    "Interoperability testing strategy \u2014 synthetic data, negative tests, and contracts"
   ],
   "posts": [
     {
@@ -155,6 +156,13 @@
       "path": "/home/runner/work/linkedin-post/linkedin-post/drafts/2026-07-31_154135.md",
       "image": "/home/runner/work/linkedin-post/linkedin-post/drafts/2026-07-31_154135.png",
       "hook": "US Core mapping is consumer protection."
+    },
+    {
+      "date": "2026-07-31",
+      "topic": "Interoperability testing strategy \u2014 synthetic data, negative tests, and contracts",
+      "path": "/home/runner/work/linkedin-post/linkedin-post/drafts/2026-07-31_154918.md",
+      "image": "/home/runner/work/linkedin-post/linkedin-post/drafts/2026-07-31_154918.png",
+      "hook": "Interop testing needs negative paths."
     }
   ]
 }
