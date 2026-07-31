@@ -21,186 +21,258 @@ from linkedin_image import create_post_image
 from send_email import send_text
 
 
-TOPIC_BANK = [
-    "HL7 FHIR R4 resource modeling — why clean profiles beat one-off extensions",
-    "CMS Patient Access API — what payers still get wrong about member experience",
-    "Provider Directory API — data quality as the real interoperability bottleneck",
-    "CMS-0057-F Prior Authorization — CRD: when coverage requirements should surface",
-    "CMS-0057-F — DTR and the documentation burden on clinicians and payers",
-    "CMS-0057-F — PAS: designing a reliable prior-auth submission path",
-    "FHIR Bulk Data / $export — practical patterns for analytics pipelines",
-    "Azure API Management for FHIR APIs — auth, throttling, and observability",
-    "SMART on FHIR and app launch — security tradeoffs architects must own",
-    "Medicare vs commercial payer interop — same standards, different constraints",
-    "Technical leadership on interoperability programs — sequencing delivery risk",
-    "How AI assistants change FHIR implementation work — and what still needs humans",
-    "USCDI and FHIR US Core — mapping clinical data without breaking consumers",
-    "Interoperability testing strategy — synthetic data, negative tests, and contracts",
-    "From EDI 837/834 roots to FHIR APIs — what to keep and what to leave behind",
+# Each pack has unique image_layout + accent_theme so visuals do not repeat.
+CONTENT_LIBRARY: list[dict[str, Any]] = [
+    {
+        "id": "compliance",
+        "topic": "CMS-0057-F compliance — modernize healthcare data exchange by 2027",
+        "hook": "CMS-0057-F is more than a compliance requirement.",
+        "post_text": """CMS-0057-F is more than a compliance requirement—it's an opportunity to modernize healthcare data exchange.
+
+Patient Access, Provider Access, Payer-to-Payer, and Prior Authorization APIs are reshaping interoperability.
+
+Is your organization ready for 2027?
+
+#CMS0057F #FHIR #HealthcareIT #Interoperability #HealthTech""",
+        "image_layout": "hud_pillars",
+        "accent_theme": "cyan",
+        "alert_label": "COMPLIANCE FOCUS",
+        "image_title": "CMS-0057-F is an opportunity",
+        "highlight": "Ready for 2027?",
+        "intro": "Four APIs reshaping healthcare interoperability.",
+        "bullets": ["Patient Access", "Provider Access", "Payer-to-Payer", "Prior Authorization"],
+        "badge_labels": ["CMS-0057-F", "FHIR", "APIs", "2027"],
+        "cta": "Is your organization ready for 2027?",
+        "footer_note": "CMS-0057-F · FHIR · Interoperability",
+    },
+    {
+        "id": "prior_auth",
+        "topic": "Prior Authorization with CRD, DTR, and PAS",
+        "hook": "Prior Authorization doesn't have to be a manual process.",
+        "post_text": """Prior Authorization doesn't have to be a manual process.
+
+CRD identifies requirements.
+DTR gathers documentation.
+PAS submits the authorization.
+
+FHIR is helping healthcare move toward real-time decisions.
+
+#PriorAuthorization #FHIR #DaVinci #HealthcareInnovation #CMS0057F""",
+        "image_layout": "hud_workflow",
+        "accent_theme": "lime",
+        "alert_label": "PRIOR AUTH",
+        "image_title": "CRD → DTR → PAS",
+        "highlight": "From manual process to real-time decisions",
+        "steps": [
+            "CRD identifies requirements",
+            "DTR gathers documentation",
+            "PAS submits the authorization",
+        ],
+        "bullets": [
+            "CRD identifies requirements",
+            "DTR gathers documentation",
+            "PAS submits the authorization",
+        ],
+        "badge_labels": ["CRD", "DTR", "PAS", "Da Vinci"],
+        "cta": "FHIR moves healthcare toward real-time decisions.",
+        "footer_note": "Prior Auth · Da Vinci · CMS-0057-F",
+    },
+    {
+        "id": "dotnet",
+        "topic": ".NET 10 + Healthcare FHIR APIs",
+        "hook": "Building healthcare APIs requires performance, security, and scalability.",
+        "post_text": """Building healthcare APIs requires performance, security, and scalability.
+
+.NET 10 continues to strengthen the foundation for modern FHIR-based healthcare solutions.
+
+What feature are you most excited about?
+
+#DotNet10 #HealthcareIT #FHIR #CloudArchitecture #HealthTech""",
+        "image_layout": "hud_hero",
+        "accent_theme": "sky",
+        "alert_label": ".NET 10",
+        "image_title": ".NET 10 for FHIR healthcare APIs",
+        "highlight": "Performance · Security · Scalability",
+        "bullets": ["Performance for FHIR workloads", "Security for healthcare data", "Scalability for cloud APIs"],
+        "badge_labels": [".NET 10", "FHIR", "Cloud", "APIs"],
+        "cta": "What feature are you most excited about?",
+        "footer_note": ".NET 10 · Healthcare IT · FHIR",
+    },
+    {
+        "id": "patient_access",
+        "topic": "Patient Access API — digital access to healthcare information",
+        "hook": "Patients expect digital access to their healthcare information.",
+        "post_text": """Patients expect digital access to their healthcare information.
+
+FHIR-based Patient Access APIs are helping make that expectation a reality.
+
+Better access leads to better engagement.
+
+#PatientAccessAPI #FHIR #CMS0057F #DigitalHealth #Healthcare""",
+        "image_layout": "hud_points",
+        "accent_theme": "teal",
+        "alert_label": "PATIENT ACCESS",
+        "image_title": "Patients expect digital access",
+        "highlight": "Better access → better engagement",
+        "bullets": [
+            "Members expect app-ready health data",
+            "FHIR Patient Access APIs open the door",
+            "Complete payloads build trust",
+            "Engagement follows usable access",
+        ],
+        "badge_labels": ["Patient Access", "FHIR", "Members", "Apps"],
+        "cta": "Better access leads to better engagement.",
+        "footer_note": "Patient Access · FHIR · CMS-0057-F",
+    },
+    {
+        "id": "provider_directory",
+        "topic": "Provider Directory — accurate searchable provider data",
+        "hook": "Accurate provider data is essential for care coordination.",
+        "post_text": """Accurate provider data is essential for care coordination.
+
+FHIR Provider Directory APIs help deliver standardized, searchable provider information across the healthcare ecosystem.
+
+#ProviderDirectory #FHIR #HealthcareData #Interoperability #HealthIT""",
+        "image_layout": "hud_grid",
+        "accent_theme": "mint",
+        "alert_label": "DIRECTORY",
+        "image_title": "Accurate provider data",
+        "highlight": "Standardized · Searchable · Trusted",
+        "bullets": ["Standardized FHIR resources", "Searchable across networks", "Fresh NPI & locations", "Trusted care coordination"],
+        "badge_labels": ["Directory", "NPI", "FHIR", "Search"],
+        "cta": "Care coordination starts with clean directory data.",
+        "footer_note": "Provider Directory · FHIR · HealthIT",
+        "left_label": "Looks Fine",
+        "left_points": ["Valid FHIR", "Endpoints live", "Checklist passed"],
+        "right_label": "Still Broken",
+        "right_points": ["Stale phone/NPI", "Wrong network", "No freshness owner"],
+    },
+    {
+        "id": "payer_to_payer",
+        "topic": "Payer-to-Payer Data Exchange for continuity of care",
+        "hook": "Healthcare data shouldn't stop moving when a member changes plans.",
+        "post_text": """Healthcare data shouldn't stop moving when a member changes plans.
+
+Payer-to-Payer Data Exchange helps ensure continuity of care and a better member experience.
+
+#PayerToPayer #FHIR #CMS0057F #HealthcareInteroperability #DigitalTransformation""",
+        "image_layout": "hud_stack",
+        "accent_theme": "amber",
+        "alert_label": "P2P EXCHANGE",
+        "image_title": "Data shouldn't stop at plan change",
+        "highlight": "Continuity of care across payers",
+        "steps": [
+            "Member changes health plan",
+            "Payer-to-Payer data exchange",
+            "Clinical & claims continuity",
+            "Better member experience",
+        ],
+        "bullets": [
+            "Member changes health plan",
+            "Payer-to-Payer data exchange",
+            "Clinical & claims continuity",
+            "Better member experience",
+        ],
+        "badge_labels": ["P2P", "FHIR", "CMS", "Members"],
+        "cta": "Continuity of care starts with portable data.",
+        "footer_note": "Payer-to-Payer · FHIR · CMS-0057-F",
+    },
+    {
+        "id": "cdex",
+        "topic": "CDex — clinical data exchange for modern workflows",
+        "hook": "Clinical data exchange is becoming critical to modern healthcare workflows.",
+        "post_text": """Clinical data exchange is becoming a critical part of modern healthcare workflows.
+
+CDex enables the secure exchange of clinical documents, reducing delays and improving collaboration.
+
+#CDex #FHIR #ClinicalDataExchange #HealthcareIT #DaVinci""",
+        "image_layout": "hud_split",
+        "accent_theme": "emerald",
+        "alert_label": "CDex",
+        "image_title": "Clinical data without the delay",
+        "highlight": "Secure document exchange",
+        "left_label": "Without CDex",
+        "left_points": ["Fax / portal chase", "Delayed documents", "Broken collaboration"],
+        "right_label": "With CDex",
+        "right_points": ["Secure FHIR exchange", "Faster document flow", "Better collaboration"],
+        "bullets": ["Secure clinical documents", "Fewer delays", "Stronger collaboration"],
+        "badge_labels": ["CDex", "Da Vinci", "FHIR", "Docs"],
+        "cta": "Reduce delays. Improve clinical collaboration.",
+        "footer_note": "CDex · Da Vinci · Clinical Data Exchange",
+    },
+    {
+        "id": "api_security",
+        "topic": "API Security — OAuth 2.0 and SMART on FHIR",
+        "hook": "Interoperability starts with trust.",
+        "post_text": """Interoperability starts with trust.
+
+OAuth 2.0, SMART on FHIR, and secure API design are key to protecting healthcare data while enabling innovation.
+
+#APISecurity #SMARTonFHIR #HealthcareSecurity #FHIR #HealthTech""",
+        "image_layout": "hud_security",
+        "accent_theme": "coral",
+        "alert_label": "SECURITY",
+        "image_title": "Interoperability starts with trust",
+        "highlight": "Protect data. Enable innovation.",
+        "bullets": ["OAuth 2.0", "SMART on FHIR", "Secure API design", "Least-privilege scopes"],
+        "badge_labels": ["OAuth", "SMART", "FHIR", "Trust"],
+        "cta": "Trust is the first interoperability requirement.",
+        "footer_note": "API Security · SMART on FHIR · HealthTech",
+    },
+    {
+        "id": "cds_hooks",
+        "topic": "CDS Hooks — coverage guidance in the clinical workflow",
+        "hook": "What if providers could receive coverage guidance during their workflow?",
+        "post_text": """What if providers could receive coverage guidance during their workflow?
+
+CDS Hooks brings real-time decision support directly into the clinical experience.
+
+#CDSHooks #FHIR #HealthcareInnovation #DigitalHealth #HealthIT""",
+        "image_layout": "hud_alert",
+        "accent_theme": "navy",
+        "alert_label": "CDS HOOKS",
+        "image_title": "Coverage guidance in the workflow",
+        "highlight": "Real-time clinical decision support",
+        "intro": "Bring coverage rules to the point of care — not after denial.",
+        "bullets": [
+            "Hook into the clinical workflow",
+            "Surface coverage requirements early",
+            "Reduce after-the-fact denials",
+            "Keep guidance actionable in seconds",
+        ],
+        "badge_labels": ["CDS Hooks", "CRD", "FHIR", "EHR"],
+        "cta": "Decision support belongs in the clinical moment.",
+        "footer_note": "CDS Hooks · FHIR · Digital Health",
+    },
+    {
+        "id": "future",
+        "topic": "Future of healthcare — connected, automated, interoperable",
+        "hook": "The future of healthcare is connected, automated, and interoperable.",
+        "post_text": """The future of healthcare is connected, automated, and interoperable.
+
+FHIR standards, cloud platforms, AI, and modern APIs are accelerating that transformation.
+
+Where do you see the biggest opportunity?
+
+#FHIR #HealthTech #HealthcareInnovation #DigitalTransformation #CMS0057F""",
+        "image_layout": "hud_quote",
+        "accent_theme": "steel",
+        "alert_label": "FUTURE",
+        "image_title": "Where do you see the biggest opportunity?",
+        "highlight": "Connected · Automated · Interoperable",
+        "bullets": ["FHIR standards", "Cloud platforms", "AI assistants", "Modern APIs"],
+        "badge_labels": ["FHIR", "Cloud", "AI", "APIs"],
+        "cta": "Connected. Automated. Interoperable.",
+        "footer_note": "FHIR · HealthTech · Digital Transformation",
+    },
 ]
 
-_FALLBACK_BODIES: dict[str, tuple[str, str]] = {
-    TOPIC_BANK[0]: (
-        "Clean FHIR profiles beat one-off extensions.",
-        """A FHIR R4 model that "works in the demo" often collapses in production when every team invents its own extension.
-
-I keep coming back to the same rule: constrain first with profiles and terminology bindings, then extend only when the use case is truly net-new. One-off extensions feel fast. They become the debt that breaks Patient Access consumers, Provider Directory clients, and Prior Auth (CRD/DTR/PAS) workflows later.
-
-If you are designing a payer or platform FHIR layer this quarter, ask: would a third-party app interpret this resource the same way your internal team does?
-
-Clean contracts scale. Clever extensions rarely do.
-
-#FHIR #HL7FHIR #HealthIT #Interoperability #HealthcareArchitecture #CMSInteroperability""",
-    ),
-    TOPIC_BANK[1]: (
-        "Patient Access API gaps show up as member friction.",
-        """CMS Patient Access API compliance is not the same as a usable member experience.
-
-I see payers ship FHIR endpoints that pass a checklist, then members still hit incomplete claims history, thin ExplanationOfBenefit payloads, or auth flows that apps cannot complete. The standard opened the door. Data readiness and API product thinking decide whether anyone walks through it.
-
-Architecture question worth asking weekly: if a third-party app called your Patient Access endpoints today, what would disappoint a real member first?
-
-#PatientAccessAPI #FHIR #CMSInteroperability #HealthIT #Payer #HealthcareTechnology""",
-    ),
-    TOPIC_BANK[2]: (
-        "Provider Directory quality is the silent interop failure.",
-        """Provider Directory APIs fail quietly. The FHIR looks fine. The phone numbers, specialties, and network status do not.
-
-For CMS interoperability, directory quality is not a data-entry problem alone. It is an ownership problem across credentialing, network management, and the API platform. Stale NPI attributes and mismatched locations break member find-care journeys and downstream Prior Auth context.
-
-If your directory FHIR resources are live, what is your freshness SLA — and who gets paged when it slips?
-
-#ProviderDirectory #FHIR #CMSInteroperability #HealthIT #HealthcareData #Payer""",
-    ),
-    TOPIC_BANK[3]: (
-        "CRD should surface coverage requirements early.",
-        """CMS-0057-F CRD is powerful when coverage requirements show up in the clinical workflow — not after the claim is denied.
-
-The architectural win is timing: CDS Hooks + FHIR context at the decision point, so clinicians see what documentation and auth rules apply before ordering. The failure mode is treating CRD as a bolted-on check that fires too late or with incomplete patient/encounter context.
-
-If you are implementing CRD now, where does the hook land in your EHR workflow — and is the response actionable in under a few seconds?
-
-#CMS0057F #CRD #PriorAuthorization #FHIR #HealthIT #Interoperability""",
-    ),
-    TOPIC_BANK[4]: (
-        "DTR only helps if documentation asks are precise.",
-        """DTR under CMS-0057-F can reduce Prior Auth friction — or multiply form fatigue.
-
-The difference is questionnaire design and mapping to real clinical data. Vague documentation templates create click-burden. Tight questionnaires, pre-population from FHIR resources, and clear "why we need this" language create adoption.
-
-When teams struggle with DTR, I usually look at the questionnaire library before the FHIR transport.
-
-What is harder in your program: building the Questionnaire, or wiring it to source systems?
-
-#DTR #CMS0057F #PriorAuthorization #FHIR #HealthIT #ClinicalWorkflow""",
-    ),
-    TOPIC_BANK[5]: (
-        "PAS succeeds when submission paths are boringly reliable.",
-        """PAS is the CMS-0057-F piece that turns Prior Auth from phone/fax theater into an API contract.
-
-Reliability matters more than cleverness: idempotent submissions, clear ClaimResponse handling, status polling or subscriptions, and operational runbooks when a payer endpoint is slow. Interoperability programs stall when PAS is demoed once and never load-tested against real denial and pended scenarios.
-
-If you run PAS today, can you replay a failed submission without creating duplicate auth requests?
-
-#PAS #CMS0057F #PriorAuthorization #FHIR #HealthIT #APIManagement""",
-    ),
-    TOPIC_BANK[6]: (
-        "Bulk Data fails when ops is an afterthought.",
-        """FHIR Bulk Data / $export looks simple in a lab: kick off a job, poll, download NDJSON.
-
-In production, the hard parts are tenancy isolation, partial failure, re-export windows, and how analytics teams actually consume the files without turning your FHIR server into a batch warehouse. I have seen clean CapabilityStatements paired with overnight jobs that stall because nobody owned storage lifecycle or access auditing.
-
-If you are standing up $export, design the operational contract first — retention, retry, alerting — then celebrate the happy-path demo.
-
-#BulkData #FHIR #HealthIT #Interoperability #HealthcareAnalytics #CMSInteroperability""",
-    ),
-    TOPIC_BANK[7]: (
-        "APIM is where FHIR security becomes real.",
-        """Azure API Management will not fix a weak FHIR design — but it will expose one.
-
-AuthZ boundaries, client credentials vs SMART scopes, throttling for noisy consumers, and tracing across Patient Access / Directory / Prior Auth routes are product decisions, not just platform toggles. Treat APIM policies as part of your interop architecture review, not a last-mile checkbox.
-
-What is one APIM policy you refuse to ship without on a healthcare API?
-
-#Azure #APIManagement #FHIR #HealthIT #HealthcareArchitecture #CMSInteroperability""",
-    ),
-    TOPIC_BANK[8]: (
-        "SMART launch security is an architecture choice.",
-        """SMART on FHIR app launch is where security theater meets clinical workflow.
-
-Token lifetimes, launch context integrity, EHR vs standalone flows, and what you put in the ID token vs access token all become production incidents when treated as "library defaults." Architects own the threat model — especially when third-party apps sit in front of member or clinician data.
-
-If you reviewed your SMART launch path tomorrow, what would you test first: redirect hygiene, scope creep, or context spoofing?
-
-#SMARTonFHIR #FHIR #HealthIT #HealthcareSecurity #Interoperability #APIManagement""",
-    ),
-    TOPIC_BANK[9]: (
-        "Same FHIR standards. Different payer constraints.",
-        """Medicare Advantage and commercial lines can share the same FHIR profiles and still need different operating models.
-
-Coverage rules, network constructs, and member identity resolution diverge even when US Core looks familiar. Programs stall when teams assume "one Patient Access stack" without mapping those constraints into data contracts and SLAs.
-
-Where do you feel the gap more today: clinical data completeness, or claims/coverage semantics?
-
-#Medicare #Payer #FHIR #CMSInteroperability #HealthIT #HealthcareTechnology""",
-    ),
-    TOPIC_BANK[10]: (
-        "Interop programs fail on sequencing, not standards.",
-        """Technical leadership on interoperability is mostly sequencing risk.
-
-Ship Directory quality before you market find-care experiences. Stabilize identity and consent before you open Patient Access floodgates. Prove CRD context before you scale DTR questionnaires. FHIR is the contract language — delivery order decides whether clinicians and members feel progress or churn.
-
-What risk are you deliberately sequencing first this quarter?
-
-#TechnicalLeadership #FHIR #CMSInteroperability #HealthIT #PriorAuthorization #HealthcareArchitecture""",
-    ),
-    TOPIC_BANK[11]: (
-        "AI helps FHIR work. Humans still own the contract.",
-        """AI assistants can draft CapabilityStatements, map extensions, and summarize IG text faster than any of us did five years ago.
-
-They still cannot own semantic decisions: when an extension is justified, how a Questionnaire should behave in clinic, or whether a Prior Auth response is operationally safe. Use AI to accelerate drafting. Keep humans on profile governance and production sign-off.
-
-Where are you letting AI help today — and where do you still require a human architect gate?
-
-#AI #FHIR #HealthIT #HealthcareArchitecture #Interoperability #CMSInteroperability""",
-    ),
-    TOPIC_BANK[12]: (
-        "US Core mapping is consumer protection.",
-        """USCDI and FHIR US Core are not paperwork. They are how you stop every partner from inventing a private dialect.
-
-The pain shows up in Must Support choices, terminology bindings, and what you do when source systems cannot populate a required element cleanly. Map for the consumer app, not for your internal warehouse comfort.
-
-If a third-party app only trusted US Core, what would break first in your current feed?
-
-#USCDI #USCore #FHIR #HealthIT #Interoperability #HealthcareData""",
-    ),
-    TOPIC_BANK[13]: (
-        "Interop testing needs negative paths.",
-        """Happy-path FHIR demos hide the bugs that matter.
-
-Synthetic patients, expired tokens, empty Bundles, conflicting Identifier systems, and pended Prior Auth responses are where Patient Access and CMS-0057-F stacks actually fail. Build a contract test suite that prefers negative cases — then wire it into CI before the next partner onboarding.
-
-What negative test do you wish you had run before your last go-live?
-
-#InteropTesting #FHIR #HealthIT #CMSInteroperability #APIManagement #HealthcareTechnology""",
-    ),
-    TOPIC_BANK[14]: (
-        "Keep EDI wisdom. Leave EDI coupling behind.",
-        """Moving from 837/834 roots to FHIR APIs is not a lift-and-shift of X12 into JSON.
-
-Keep the operational wisdom: reconciliation, acknowledgment semantics, partner onboarding discipline. Leave behind the assumption that every clinical or member journey must wait on a batch file window. FHIR consumers expect interactive contracts; your claims heritage still informs identity and coverage truth.
-
-What is one EDI-era practice you are deliberately keeping in your FHIR program?
-
-#EDI #FHIR #HealthIT #Payer #Interoperability #HealthcareArchitecture""",
-    ),
-}
+TOPIC_BANK = [c["topic"] for c in CONTENT_LIBRARY]
 
 
 def pick_topic(override: str | None = None) -> str:
     if override:
         return override.strip()
-    # No history file — pick a random topic each run
     import random
 
     return random.choice(TOPIC_BANK)
@@ -210,204 +282,112 @@ def _profile_url() -> str:
     return load_profile().get("linkedin_url") or "https://www.linkedin.com/in/shiraj-momin-25610232/"
 
 
-def _fallback_visual(topic: str, hook: str) -> dict[str, Any]:
-    """HUD-style visual briefs matching premium HealthTech LinkedIn posts."""
+def _pack_for_topic(topic: str) -> dict[str, Any] | None:
     t = topic.lower()
+    for pack in CONTENT_LIBRARY:
+        if pack["topic"].lower() == t:
+            return pack
+    # keyword match for AI / override topics
+    rules = [
+        ("dotnet", "dotnet"),
+        (".net", "dotnet"),
+        ("prior auth", "prior_auth"),
+        ("crd", "prior_auth"),
+        ("dtr", "prior_auth"),
+        ("pas", "prior_auth"),
+        ("patient access", "patient_access"),
+        ("directory", "provider_directory"),
+        ("payer-to-payer", "payer_to_payer"),
+        ("payer to payer", "payer_to_payer"),
+        ("cdex", "cdex"),
+        ("smart", "api_security"),
+        ("oauth", "api_security"),
+        ("security", "api_security"),
+        ("cds hook", "cds_hooks"),
+        ("cds hooks", "cds_hooks"),
+        ("0057", "compliance"),
+        ("compliance", "compliance"),
+        ("future", "future"),
+    ]
+    for needle, pack_id in rules:
+        if needle in t:
+            return next(p for p in CONTENT_LIBRARY if p["id"] == pack_id)
+    return None
+
+
+def _visual_from_pack(pack: dict[str, Any]) -> dict[str, Any]:
+    skip = {"id", "topic", "hook", "post_text"}
+    return {k: v for k, v in pack.items() if k not in skip}
+
+
+def _fallback_visual(topic: str, hook: str) -> dict[str, Any]:
+    pack = _pack_for_topic(topic)
+    if pack:
+        return _visual_from_pack(pack)
+    # Unknown topic → rotate unique layout by hash so images still vary
+    import hashlib
+
+    layouts = [
+        "hud_alert",
+        "hud_workflow",
+        "hud_pillars",
+        "hud_quote",
+        "hud_split",
+        "hud_points",
+        "hud_grid",
+        "hud_stack",
+        "hud_security",
+        "hud_hero",
+    ]
+    themes = ["lime", "cyan", "teal", "amber", "coral", "steel", "mint", "sky", "navy", "emerald"]
+    idx = int(hashlib.md5(topic.encode()).hexdigest()[:8], 16)
     short = hook if len(hook) <= 56 else " ".join(hook.split()[:8])
-
-    if "pas" in t or "0057" in t or "prior auth" in t or "prior-auth" in t or "crd" in t or "dtr" in t:
-        return {
-            "image_layout": "hud_alert",
-            "alert_label": "DON'T DELAY",
-            "image_title": "CMS-0057-F Deadline",
-            "highlight": "January 1, 2027",
-            "intro": "Electronic prior authorization is no longer optional for impacted payers.",
-            "image_subtitle": "January 1, 2027",
-            "bullets": [
-                "Prior Authorization APIs must be live and production-ready",
-                "CRD, DTR, and PAS require real end-to-end testing — not demos",
-                "Provider Directory + clinical context must connect cleanly",
-                "Late testing is the #1 reason programs miss go-live",
-            ],
-            "rail_labels": ["Patient Overview", "Interoperability", "Document Exchange"],
-            "cta": "The deadline is closer than it looks. Start now.",
-            "footer_note": "Build · Test · Validate FHIR prior-auth workflows before the deadline.",
-            "left_label": "",
-            "left_points": [],
-            "right_label": "",
-            "right_points": [],
-            "steps": [],
-            "badge_labels": ["CMS-0057-F", "PAS", "CRD", "DTR"],
-            "accent_theme": "dark_green",
-        }
-    if "edi" in t or "837" in t or "834" in t:
-        return {
-            "image_layout": "hud_split",
-            "alert_label": "ARCHITECTURE CHOICE",
-            "image_title": "Stop grouping HL7 and FHIR as one bucket",
-            "highlight": "Two standards. Two business realities.",
-            "left_label": "HL7 v2: Operational Tax",
-            "left_points": ["Point-to-point fragility", "High maintenance cost", "Hard to productize"],
-            "right_label": "FHIR: Growth Engine",
-            "right_points": ["Reusable APIs", "Faster onboarding", "Member-ready access"],
-            "bullets": [],
-            "rail_labels": [],
-            "cta": "Architect for the model you want to operate.",
-            "footer_note": "FHIR · HL7 · Interoperability",
-            "steps": [],
-            "badge_labels": ["HL7 v2", "FHIR", "API", "Scale"],
-            "accent_theme": "dark_green",
-        }
-    if "patient access" in t:
-        return {
-            "image_layout": "hud_alert",
-            "alert_label": "MEMBER EXPERIENCE",
-            "image_title": "Patient Access API gaps show up as friction",
-            "highlight": "Compliance ≠ experience",
-            "intro": "A checklist pass is not the same as a usable member app journey.",
-            "bullets": [
-                "Incomplete claims / EOB payloads break trust fast",
-                "Auth flows must complete for real third-party apps",
-                "Data readiness decides whether anyone uses the API",
-                "Test with a consumer app — not only internal tools",
-            ],
-            "rail_labels": ["Member Apps", "Claims Data", "AuthN/Z"],
-            "cta": "If an app called your endpoints today — what fails first?",
-            "footer_note": "Patient Access · FHIR · CMS Interoperability",
-            "left_label": "",
-            "left_points": [],
-            "right_label": "",
-            "right_points": [],
-            "steps": ["Checklist go-live", "FHIR endpoints", "Usable member apps"],
-            "badge_labels": ["Patient Access", "FHIR", "Member", "Apps"],
-            "accent_theme": "navy",
-        }
-    if "directory" in t:
-        return {
-            "image_layout": "hud_split",
-            "image_title": "Provider Directory quality is the silent failure",
-            "highlight": "Valid FHIR can still fail members",
-            "left_label": "Looks Fine",
-            "left_points": ["Valid resources", "Endpoints live", "Checklist passed"],
-            "right_label": "Still Broken",
-            "right_points": ["Stale phone/NPI", "Wrong network status", "No freshness owner"],
-            "bullets": [],
-            "cta": "Who owns freshness SLA when directory data drifts?",
-            "footer_note": "Provider Directory · FHIR · CMS",
-            "alert_label": "DATA QUALITY",
-            "rail_labels": [],
-            "steps": [],
-            "badge_labels": ["Directory", "NPI", "Network", "SLA"],
-            "accent_theme": "dark_green",
-        }
-    if (
-        "profile" in t
-        or "extension" in t
-        or "resource modeling" in t
-        or "uscdi" in t
-        or "us core" in t
-        or "azure" in t
-        or "apim" in t
-        or "api management" in t
-    ):
-        title = "Clean profiles beat one-off extensions"
-        highlight = "Constrain first. Extend only when needed."
-        bullets = [
-            "Profiles + terminology bindings before custom extensions",
-            "One-off extensions become consumer debt",
-            "Ask: would a third-party app read this the same way?",
-            "Clean contracts scale — clever extensions rarely do",
-        ]
-        if "uscdi" in t or "us core" in t:
-            title, highlight = "USCDI & US Core", "Mapping is consumer protection"
-            bullets = [
-                "Stop every partner inventing a private dialect",
-                "Must Support choices show up in real apps",
-                "Map for the consumer — not warehouse comfort",
-                "Know what breaks if apps only trust US Core",
-            ]
-        if "azure" in t or "apim" in t or "api management" in t:
-            title, highlight = "Azure APIM for FHIR APIs", "Security and scale are product decisions"
-            bullets = [
-                "AuthZ boundaries and SMART scopes",
-                "Throttling for noisy consumers",
-                "Tracing across Patient Access / Directory / PA",
-                "Policies reviewed with architecture — not last-mile",
-            ]
-        return {
-            "image_layout": "hud_points",
-            "alert_label": "KEY INSIGHTS",
-            "image_title": title,
-            "highlight": highlight,
-            "bullets": bullets,
-            "cta": "Ship clean contracts — not checklist theater.",
-            "footer_note": "FHIR · CMS · Interoperability",
-            "rail_labels": [],
-            "left_label": "",
-            "left_points": [],
-            "right_label": "",
-            "right_points": [],
-            "steps": [],
-            "badge_labels": ["FHIR", "CMS", "API", "Interop"],
-            "accent_theme": "navy",
-        }
-
-    words = [w.strip("—,") for w in topic.replace("/", " ").split() if len(w) > 2][:4]
-    while len(words) < 4:
-        words += ["FHIR", "CMS", "API", "Interop"]
     return {
-        "image_layout": "hud_alert",
+        "image_layout": layouts[idx % len(layouts)],
+        "accent_theme": themes[(idx // 3) % len(themes)],
         "alert_label": "HEALTH IT",
         "image_title": short,
-        "highlight": "Connectivity ≠ coordination",
-        "intro": "Standards create the contract. Architecture and ownership create the outcome.",
-        "bullets": [
-            f"Focus: {short}",
-            "Architecture and ownership beat demos",
-            "Data stewardship decides adoption",
-            "Measure member and clinician outcomes",
-        ],
-        "rail_labels": words[:3],
-        "cta": "Ship the operating model — not only the CapabilityStatement.",
+        "highlight": "Connected · Automated · Interoperable",
+        "bullets": [short, "Architecture and ownership beat demos", "Data stewardship decides adoption", "Measure real outcomes"],
+        "badge_labels": ["FHIR", "CMS", "API", "Interop"],
+        "cta": "Where do you see the biggest opportunity?",
         "footer_note": "FHIR · CMS · Interoperability · HealthIT",
+        "steps": [],
         "left_label": "",
         "left_points": [],
         "right_label": "",
         "right_points": [],
-        "steps": [],
-        "badge_labels": words[:4],
-        "accent_theme": "dark_green",
     }
-
 
 
 def _fallback_post(topic: str) -> dict[str, Any]:
     profile = load_profile()
     name = profile.get("name", "Shiraj Momin")
-    if topic in _FALLBACK_BODIES:
-        hook, post = _FALLBACK_BODIES[topic]
+    pack = _pack_for_topic(topic)
+    if pack:
+        hook = pack["hook"]
+        post = pack["post_text"]
+        visual = _visual_from_pack(pack)
     else:
         hook = "Interop wins come from operating model, not only standards."
         post = f"""Most FHIR programs do not fail on the standard — they fail on the operating model around it.
 
 Today's focus: {topic}
 
-When I work with payer and platform teams, the pattern is consistent: R4 resources get modeled, APIs go live, then Provider Directory data drifts, Patient Access responses feel incomplete, or Prior Auth (CRD/DTR/PAS) stalls because clinical and claims systems were never designed to share context.
-
 Standards create the contract. Architecture, data stewardship, and delivery leadership determine whether members and clinicians actually feel the benefit.
 
-If you are building CMS interoperability capability right now, what is the hardest part — the FHIR layer, the source systems, or the cross-team ownership?
+Where do you see the biggest opportunity?
 
-#FHIR #CMSInteroperability #HealthIT #PriorAuthorization #HealthcareTechnology #APIManagement"""
+#FHIR #CMSInteroperability #HealthIT #HealthcareTechnology #HealthTech"""
+        visual = _fallback_visual(topic, hook)
 
     tags = [t for t in post.split() if t.startswith("#")]
-    visual = _fallback_visual(topic, hook)
     return {
         "topic": topic,
         "hook": hook,
         "post_text": post.strip(),
         "hashtags": tags,
-        "why_this_topic": f"Fallback draft for {name} on rotating topic bank.",
+        "why_this_topic": f"Content pack for {name}.",
         **visual,
     }
 
@@ -445,11 +425,11 @@ def generate_post(topic: str | None = None, use_ai: bool = True) -> dict[str, An
         return _fallback_post(chosen)
 
     result.setdefault("topic", chosen)
+    # Always apply unique pack visuals so images do not collapse to one layout
     visual = _fallback_visual(result.get("topic") or chosen, result.get("hook") or chosen)
     for key, value in visual.items():
-        if key == "image_layout" or not result.get(key):
+        if key in ("image_layout", "accent_theme") or not result.get(key):
             result[key] = value
-    result["image_layout"] = visual.get("image_layout") or "hud_alert"
     print("[linkedin] AI post generated")
     return result
 
