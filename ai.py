@@ -44,7 +44,7 @@ def call_anthropic(system: str, user: str) -> dict[str, Any] | None:
         import anthropic
 
         client = anthropic.Anthropic(api_key=api_key)
-        model = env("ANTHROPIC_MODEL", "claude-sonnet-4-20250514")
+        model = env("ANTHROPIC_MODEL", "claude-sonnet-4-6")
         resp = client.messages.create(
             model=model,
             max_tokens=1400,

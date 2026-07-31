@@ -16,11 +16,10 @@ from pathlib import Path
 from typing import Any
 
 from ai import call_llm
-from common import DATA_DIR, DRAFTS_DIR, ensure_dirs, env, load_profile, load_prompt
-from linkedin_image import create_post_image, image_path_for_draft
+from common import cleanup_runtime_files, env, load_profile, load_prompt
+from linkedin_image import create_post_image
 from send_email import send_text
 
-HISTORY_PATH = DATA_DIR / "post_history.json"
 
 TOPIC_BANK = [
     "HL7 FHIR R4 resource modeling — why clean profiles beat one-off extensions",
@@ -198,31 +197,13 @@ What is one EDI-era practice you are deliberately keeping in your FHIR program?
 }
 
 
-def _load_history() -> dict[str, Any]:
-    if not HISTORY_PATH.exists():
-        return {"used_topics": [], "posts": []}
-    try:
-        return json.loads(HISTORY_PATH.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
-        return {"used_topics": [], "posts": []}
-
-
-def _save_history(history: dict[str, Any]) -> None:
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    HISTORY_PATH.write_text(json.dumps(history, indent=2), encoding="utf-8")
-
-
 def pick_topic(override: str | None = None) -> str:
     if override:
         return override.strip()
-    history = _load_history()
-    used = set(history.get("used_topics") or [])
-    for topic in TOPIC_BANK:
-        if topic not in used:
-            return topic
-    history["used_topics"] = []
-    _save_history(history)
-    return TOPIC_BANK[0]
+    # No history file — pick a random topic each run
+    import random
+
+    return random.choice(TOPIC_BANK)
 
 
 def _profile_url() -> str:
@@ -439,8 +420,6 @@ def generate_post(topic: str | None = None, use_ai: bool = True) -> dict[str, An
 
     system = load_prompt("linkedin_post_prompt.txt")
     profile = load_profile()
-    history = _load_history()
-    recent = [p.get("topic") for p in (history.get("posts") or [])[-5:]]
     user = json.dumps(
         {
             "author": {
@@ -451,10 +430,9 @@ def generate_post(topic: str | None = None, use_ai: bool = True) -> dict[str, An
                 "linkedin": _profile_url(),
             },
             "today_topic_hint": chosen,
-            "recent_topics_to_avoid": recent,
             "date": datetime.now().strftime("%Y-%m-%d"),
             "style_notes": [
-                "Match high-performing Health IT LinkedIn posts: sharp hook, short paragraphs, infographic-ready visual fields.",
+                "Match high-performing Health IT LinkedIn posts: sharp hook, short paragraphs.",
                 "Prefer concrete FHIR/CMS language over generic digital transformation talk.",
             ],
         },
@@ -467,8 +445,6 @@ def generate_post(topic: str | None = None, use_ai: bool = True) -> dict[str, An
         return _fallback_post(chosen)
 
     result.setdefault("topic", chosen)
-    # Image layout/content always comes from HUD visual briefs (AI writes post text only).
-    # This prevents old "workflow"/plain templates from slipping through.
     visual = _fallback_visual(result.get("topic") or chosen, result.get("hook") or chosen)
     for key, value in visual.items():
         if key == "image_layout" or not result.get(key):
@@ -478,69 +454,10 @@ def generate_post(topic: str | None = None, use_ai: bool = True) -> dict[str, An
     return result
 
 
-def save_post(post: dict[str, Any]) -> tuple[Path, Path]:
-    ensure_dirs()
-    stamp = datetime.now().strftime("%Y-%m-%d")
-    path = DRAFTS_DIR / f"{stamp}.md"
-    if path.exists():
-        path = DRAFTS_DIR / f"{stamp}_{datetime.now().strftime('%H%M%S')}.md"
-
-    image_path = image_path_for_draft(path)
-    create_post_image(post, image_path)
-
-    tags = " ".join(post.get("hashtags") or [])
-    body = f"""# LinkedIn draft — {stamp}
-
-**Topic:** {post.get('topic')}
-**Hook:** {post.get('hook')}
-**Why:** {post.get('why_this_topic')}
-**Image:** {image_path.name}
-**Layout:** {post.get('image_layout')}
-
----
-
-## Copy & paste to LinkedIn
-
-{post.get('post_text')}
-
----
-
-## Image (attach on LinkedIn)
-
-Upload this file with your post: `{image_path}`
-
-Suggested tags: {tags}
-Profile: {_profile_url()}
-"""
-    path.write_text(body, encoding="utf-8")
-
-    history = _load_history()
-    used = list(history.get("used_topics") or [])
-    topic = post.get("topic") or ""
-    if topic and topic not in used:
-        used.append(topic)
-    posts = list(history.get("posts") or [])
-    posts.append(
-        {
-            "date": stamp,
-            "topic": topic,
-            "path": str(path),
-            "image": str(image_path),
-            "hook": post.get("hook"),
-        }
-    )
-    history["used_topics"] = used
-    history["posts"] = posts[-90:]
-    _save_history(history)
-    return path, image_path
-
-
-def email_post(post: dict[str, Any], path: Path, image_path: Path) -> bool:
-    body = f"""Your LinkedIn draft for today is ready.
+def email_post(post: dict[str, Any], image_path: Path) -> bool:
+    body = f"""Your LinkedIn draft is ready.
 
 Topic: {post.get('topic')}
-Post file: {path}
-Image file: {image_path}  (also attached to this email)
 
 1. Copy the text below into a new LinkedIn post
 2. Upload the attached PNG as the post image
@@ -552,42 +469,56 @@ Image file: {image_path}  (also attached to this email)
 
 --- END ---
 
-Paste into LinkedIn when ready:
-{_profile_url()}
+Profile: {_profile_url()}
 """
     return send_text(
-        subject="Daily draft — FHIR / CMS interop",
+        subject="LinkedIn draft — FHIR / CMS interop",
         body=body,
         attachments=[image_path],
     )
 
 
-def generate_and_deliver(*, use_ai: bool = True, send_email: bool = True, topic: str | None = None) -> Path:
+def generate_and_deliver(*, use_ai: bool = True, send_email: bool = True, topic: str | None = None) -> None:
+    import tempfile
+
+    # Remove leftover local files from previous runs
+    cleanup_runtime_files()
+
     post = generate_post(topic=topic, use_ai=use_ai)
-    path, image_path = save_post(post)
-    print(f"[linkedin] Draft written: {path}")
-    print(f"[linkedin] Image written: {image_path}")
+
+    tmp_dir = Path(tempfile.mkdtemp(prefix="linkedin_agent_"))
+    image_path = tmp_dir / "linkedin_post.png"
+    create_post_image(post, image_path)
+
+    print(f"[linkedin] Topic: {post.get('topic')}")
     print("---")
     try:
         print(post.get("post_text") or "")
     except UnicodeEncodeError:
         print((post.get("post_text") or "").encode("ascii", errors="replace").decode("ascii"))
     print("---")
+
     if send_email:
-        email_post(post, path, image_path)
-    return path
+        ok = email_post(post, image_path)
+        if ok:
+            print("[linkedin] Email sent — use the email to post on LinkedIn")
+        else:
+            print("[linkedin] Email failed — check SMTP secrets / .env")
+
+    # Always wipe temp + any leftover drafts/history after the run
+    cleanup_runtime_files(extra_dirs=[tmp_dir])
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="LinkedIn Post Agent — daily FHIR / CMS draft")
+    parser = argparse.ArgumentParser(description="LinkedIn Post Agent — email-only FHIR / CMS draft")
     parser.add_argument("--no-ai", action="store_true", help="Use template fallback")
-    parser.add_argument("--no-email", action="store_true", help="Skip email")
+    parser.add_argument("--no-email", action="store_true", help="Skip email (print only)")
     parser.add_argument("--topic", default="", help="Override today's topic")
     args = parser.parse_args()
 
     print("=" * 60)
     print("LinkedIn Post Agent")
-    print("Topics: FHIR · CMS interoperability · health tech")
+    print("Output: email only (no local drafts or history)")
     print(f"Started: {datetime.now().isoformat(timespec='seconds')}")
     print("=" * 60)
 

@@ -2,6 +2,7 @@
 .env
 __pycache__/
 *.pyc
+drafts/
+data/
 assets/*.png
-drafts/*
-!drafts/.gitkeep
+_extract_content.py

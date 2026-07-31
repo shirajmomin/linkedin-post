@@ -1,23 +1,12 @@
 """Premium LinkedIn HUD / HealthTech visuals (1080x1350).
 
-Primary style matches high-end dark neon HealthTech posts:
-- dark canvas + grid
-- neon lime / cyan accents
-- alert chip, big headline, highlight line
-- icon bullets + optional medical wireframe panel
-- bottom CTA bar
-
+Dark neon canvas with grid + glow — no photo/skeleton backgrounds.
 No author name on the image.
 """
 
 from __future__ import annotations
 
 import hashlib
-import io
-import math
-import random
-import urllib.parse
-import urllib.request
 from pathlib import Path
 from typing import Any
 
@@ -40,9 +29,6 @@ HUD = {
     "line": (40, 55, 75),
     "card": (22, 28, 40),
 }
-
-ASSETS = Path(__file__).resolve().parent / "assets"
-ASSETS.mkdir(exist_ok=True)
 
 
 def _fonts(scale: int = 1) -> dict[str, Any]:
@@ -100,50 +86,6 @@ def _wrap(text: str, font: Any, max_w: int, draw: Any) -> list[str]:
     return lines
 
 
-def _download(url: str, timeout: int = 90) -> bytes | None:
-    try:
-        req = urllib.request.Request(url, headers={"User-Agent": "LinkedInPostAgent/2.0"})
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            return resp.read()
-    except Exception as exc:  # noqa: BLE001
-        print(f"[image] download failed: {exc}")
-        return None
-
-
-def _wireframe_asset(seed: int) -> Any | None:
-    """Fetch / cache a neon medical wireframe visual (no text)."""
-    from PIL import Image
-
-    cache = ASSETS / f"wireframe_{seed % 7}.png"
-    if cache.exists() and cache.stat().st_size > 8000:
-        try:
-            return Image.open(cache).convert("RGBA")
-        except Exception:
-            pass
-
-    prompt = (
-        "futuristic medical HUD, glowing cyan wireframe human skeleton and nervous system, "
-        "dark charcoal background, digital xray scan style, neon blue edges, high detail, "
-        "no text, no letters, no logo, no watermark, centered figure"
-    )
-    encoded = urllib.parse.quote(prompt)
-    url = (
-        f"https://image.pollinations.ai/prompt/{encoded}"
-        f"?width=768&height=1200&seed={seed % 9973}&nologo=true&model=flux"
-    )
-    print("[image] Fetching HUD wireframe visual…")
-    raw = _download(url, timeout=120)
-    if not raw:
-        return None
-    try:
-        img = Image.open(io.BytesIO(raw)).convert("RGBA")
-        img.save(cache, format="PNG")
-        return img
-    except Exception as exc:  # noqa: BLE001
-        print(f"[image] wireframe decode failed: {exc}")
-        return None
-
-
 def _gradient(img: Any, c1: tuple[int, int, int], c2: tuple[int, int, int]) -> None:
     from PIL import ImageDraw
 
@@ -154,6 +96,17 @@ def _gradient(img: Any, c1: tuple[int, int, int], c2: tuple[int, int, int]) -> N
         g = int(c1[1] + (c2[1] - c1[1]) * t)
         b = int(c1[2] + (c2[2] - c1[2]) * t)
         d.line([(0, y), (WIDTH, y)], fill=(r, g, b))
+
+
+def _soft_blob(base: Any, xy: tuple[int, int], radius: int, color: tuple[int, int, int], alpha: int = 40) -> Any:
+    from PIL import Image, ImageDraw, ImageFilter
+
+    overlay = Image.new("RGBA", base.size, (0, 0, 0, 0))
+    d = ImageDraw.Draw(overlay)
+    x, y = xy
+    d.ellipse([x - radius, y - radius, x + radius, y + radius], fill=(*color, alpha))
+    overlay = overlay.filter(ImageFilter.GaussianBlur(max(radius // 3, 8)))
+    return Image.alpha_composite(base.convert("RGBA"), overlay)
 
 
 def _grid(base: Any) -> Any:
@@ -215,84 +168,17 @@ def _icon_box(draw: Any, xy: tuple[int, int], kind: str, size: int = 34) -> None
         draw.ellipse([cx - 5, cy - 5, cx + 5, cy + 5], fill=c)
 
 
-def _draw_fallback_figure(base: Any, box: tuple[int, int, int, int]) -> Any:
-    """Geometric neon 'scan figure' if AI wireframe unavailable."""
-    from PIL import Image, ImageDraw, ImageFilter
-
-    overlay = Image.new("RGBA", base.size, (0, 0, 0, 0))
-    d = ImageDraw.Draw(overlay)
-    x0, y0, x1, y1 = box
-    cx = (x0 + x1) // 2
-    # outer glow frame
-    d.rounded_rectangle([x0, y0, x1, y1], radius=24, outline=(*HUD["cyan"], 80), width=2)
-    # head
-    d.ellipse([cx - 50, y0 + 40, cx + 50, y0 + 140], outline=HUD["cyan"], width=3)
-    # spine
-    d.line([(cx, y0 + 140), (cx, y1 - 120)], fill=HUD["lime"], width=3)
-    # ribs
-    for i in range(6):
-        yy = y0 + 180 + i * 28
-        w = 70 + i * 4
-        d.arc([cx - w, yy - 20, cx + w, yy + 20], 200, 340, fill=HUD["cyan"], width=2)
-    # arms
-    d.line([(cx, y0 + 200), (cx - 110, y0 + 320)], fill=HUD["cyan"], width=3)
-    d.line([(cx, y0 + 200), (cx + 110, y0 + 320)], fill=HUD["cyan"], width=3)
-    # pelvis + legs
-    d.polygon([(cx - 55, y1 - 280), (cx + 55, y1 - 280), (cx + 40, y1 - 240), (cx - 40, y1 - 240)], outline=HUD["lime"], width=2)
-    d.line([(cx - 25, y1 - 240), (cx - 45, y1 - 80)], fill=HUD["cyan"], width=3)
-    d.line([(cx + 25, y1 - 240), (cx + 45, y1 - 80)], fill=HUD["cyan"], width=3)
-    # scan nodes
-    for px, py in [(cx, y0 + 90), (cx - 40, y0 + 220), (cx + 40, y0 + 220), (cx, y1 - 260), (cx - 45, y1 - 120)]:
-        d.ellipse([px - 5, py - 5, px + 5, py + 5], fill=HUD["lime"])
-    # horizontal scan line
-    midy = (y0 + y1) // 2
-    d.line([(x0 + 20, midy), (x1 - 20, midy)], fill=(*HUD["lime"], 120), width=2)
-    overlay = overlay.filter(ImageFilter.GaussianBlur(0.6))
-    return Image.alpha_composite(base.convert("RGBA"), overlay)
-
-
-def _compose_wireframe(base: Any, box: tuple[int, int, int, int], seed: int) -> Any:
-    from PIL import Image, ImageEnhance
-
-    fig = _wireframe_asset(seed)
-    x0, y0, x1, y1 = box
-    bw, bh = x1 - x0, y1 - y0
-    if fig is None:
-        return _draw_fallback_figure(base, box)
-
-    fig = fig.resize((bw, bh), Image.Resampling.LANCZOS)
-    # darken + boost cyan feel
-    fig = ImageEnhance.Brightness(fig).enhance(0.85)
-    fig = ImageEnhance.Contrast(fig).enhance(1.25)
-    # soft round mask
-    mask = Image.new("L", (bw, bh), 0)
-    from PIL import ImageDraw
-
-    md = ImageDraw.Draw(mask)
-    md.rounded_rectangle([0, 0, bw, bh], radius=28, fill=220)
-    layer = Image.new("RGBA", base.size, (0, 0, 0, 0))
-    layer.paste(fig, (x0, y0), mask)
-    # neon frame
-    framed = Image.new("RGBA", base.size, (0, 0, 0, 0))
-    fd = ImageDraw.Draw(framed)
-    fd.rounded_rectangle([x0 - 2, y0 - 2, x1 + 2, y1 + 2], radius=30, outline=(*HUD["cyan"], 160), width=2)
-    out = Image.alpha_composite(base.convert("RGBA"), layer)
-    out = Image.alpha_composite(out, framed)
-    return out
-
-
 def _layout_hud_alert(post: dict[str, Any], fonts: dict[str, Any]) -> Any:
     from PIL import Image, ImageDraw
 
     img = Image.new("RGB", (WIDTH, HEIGHT))
     _gradient(img, HUD["bg"], HUD["bg2"])
     img = _grid(img)
+    # Soft glow blobs only — no skeleton / photo background
+    img = _soft_blob(img, (900, 420), 280, HUD["cyan"], 28)
+    img = _soft_blob(img, (200, 1100), 220, HUD["lime"], 18)
 
-    # Left content width vs right figure
-    left_w = 620
-    fig_box = (650, 220, WIDTH - 36, HEIGHT - 210)
-
-    img = _compose_wireframe(img, fig_box, _seed(post))
+    left_w = WIDTH - 72
     d = ImageDraw.Draw(img)
 
     # Brand chip (generic — no personal name)
@@ -320,22 +206,36 @@ def _layout_hud_alert(post: dict[str, Any], fonts: dict[str, Any]) -> Any:
         for line in _wrap(highlight, fonts["display"], left_w - 40, d)[:2]:
             d.text((36, y), line, font=fonts["display"], fill=HUD["lime"])
             y += 64
-        # supporting line under date
-        support = (post.get("support_line") or "Is around the corner — start preparing now.").strip()
-        for line in _wrap(support, fonts["body"], left_w - 40, d)[:2]:
-            d.text((36, y), line, font=fonts["body"], fill=HUD["cyan"])
-            y += 30
+        support = (post.get("support_line") or "").strip()
+        if support:
+            for line in _wrap(support, fonts["body"], left_w - 40, d)[:2]:
+                d.text((36, y), line, font=fonts["body"], fill=HUD["cyan"])
+                y += 30
 
     # Intro
     intro = (post.get("intro") or "").strip()
-    if not intro:
-        intro = (post.get("image_subtitle") or "Electronic prior authorization is no longer optional for impacted payers.")[:140]
-    y += 8
-    for line in _wrap(intro, fonts["body"], left_w - 50, d)[:3]:
-        d.text((36, y), line, font=fonts["body"], fill=HUD["muted"])
-        y += 30
+    if not intro and not highlight:
+        intro = "Standards create the contract. Delivery creates the outcome."
+    if intro:
+        y += 8
+        for line in _wrap(intro, fonts["body"], left_w - 40, d)[:3]:
+            d.text((36, y), line, font=fonts["body"], fill=HUD["muted"])
+            y += 30
 
-    # Bullets with neon icon boxes
+    # Topic chips row
+    badges = list(post.get("badge_labels") or post.get("rail_labels") or ["FHIR", "CMS", "API"])[:4]
+    y += 20
+    bx = 36
+    for badge in badges:
+        label = str(badge)[:16]
+        tw = d.textlength(label, font=fonts["small"])
+        img = _glow_rect(img, (bx, y, bx + int(tw) + 36, y + 44), HUD["cyan"], radius=14)
+        d = ImageDraw.Draw(img)
+        d.text((bx + 18, y + 10), label, font=fonts["small"], fill=HUD["cyan"])
+        bx += int(tw) + 52
+    y += 70
+
+    # Bullets with neon icon boxes — full width
     bullets = list(post.get("bullets") or [])[:4]
     if not bullets:
         bullets = [
@@ -345,32 +245,16 @@ def _layout_hud_alert(post: dict[str, Any], fonts: dict[str, Any]) -> Any:
             "Late testing creates go-live risk",
         ]
     kinds = ["data", "flow", "link", "test"]
-    y += 28
     for i, b in enumerate(bullets):
-        _icon_box(d, (36, y), kinds[i % 4], 36)
-        ty = y + 4
-        for line in _wrap(str(b), fonts["body"], left_w - 100, d)[:2]:
-            d.text((88, ty), line, font=fonts["body"], fill=HUD["ink"])
-            ty += 28
-        y = max(y + 56, ty + 12)
-
-    # Right rail labels
-    rails = list(post.get("rail_labels") or ["Patient Overview", "Interoperability", "Document Exchange"])[:3]
-    rail_icons = ["patient", "link", "doc"]
-    ry = 260
-    for i, label in enumerate(rails):
-        rx = WIDTH - 52
-        # vertical-ish stacked labels on far right of figure
-        box = (rx - 150, ry, rx, ry + 120)
-        d.rounded_rectangle(box, radius=12, outline=HUD["lime"], width=2)
-        _icon_box(d, (rx - 118, ry + 18), rail_icons[i % 3], 28)
-        # wrap label under icon
-        ly = ry + 58
-        for line in _wrap(str(label), fonts["tiny"], 130, d)[:2]:
-            tw = d.textlength(line, font=fonts["tiny"])
-            d.text((rx - 75 - tw / 2, ly), line, font=fonts["tiny"], fill=HUD["ink"])
-            ly += 20
-        ry += 150
+        box = (36, y, WIDTH - 36, y + 110)
+        img = _glow_rect(img, box, HUD["lime"] if i % 2 == 0 else HUD["cyan"], radius=16)
+        d = ImageDraw.Draw(img)
+        _icon_box(d, (56, y + 36), kinds[i % 4], 36)
+        ty = y + 28
+        for line in _wrap(str(b), fonts["h3"], WIDTH - 160, d)[:2]:
+            d.text((110, ty), line, font=fonts["h3"], fill=HUD["ink"])
+            ty += 34
+        y += 126
 
     # CTA bar
     cta = (post.get("cta") or "The deadline is closer than it looks. Start now.").strip()
@@ -381,7 +265,7 @@ def _layout_hud_alert(post: dict[str, Any], fonts: dict[str, Any]) -> Any:
     d.text((110, HEIGHT - 128), cta[:70], font=fonts["h3"], fill=HUD["ink"])
 
     # Footer note
-    foot = (post.get("footer_note") or "Build · Test · Validate FHIR prior-auth workflows before the deadline.")[:90]
+    foot = (post.get("footer_note") or "FHIR · CMS · Interoperability · HealthIT")[:90]
     tw = d.textlength(foot, font=fonts["tiny"])
     d.text(((WIDTH - tw) / 2, HEIGHT - 55), foot, font=fonts["tiny"], fill=HUD["muted"])
     return img
@@ -531,7 +415,3 @@ def create_post_image(post: dict[str, Any], out_path: Path) -> Path:
     img.save(out_path, format="PNG", compress_level=4)
     print(f"[image] HUD '{layout}' saved: {out_path.name}")
     return out_path
-
-
-def image_path_for_draft(draft_md: Path) -> Path:
-    return draft_md.with_suffix(".png")

@@ -1,23 +1,17 @@
-# Run LinkedIn Post Agent 3× daily (no local PC needed)
+# Run LinkedIn Post Agent 3× daily (email only — no local drafts/history)
 #
-# Cron is UTC. Defaults ≈ 9:00 / 14:00 / 19:00 India time (IST = UTC+5:30):
+# Cron is UTC. Defaults ≈ 9:00 / 14:00 / 19:00 IST:
 #   03:30, 08:30, 13:30 UTC
-# Adjust the cron lines below if you want different times.
 #
-# Required GitHub Secrets (Settings → Secrets and variables → Actions):
-#   SMTP_USER, SMTP_PASSWORD, EMAIL_TO
-# Optional:
-#   OPENAI_API_KEY, OPENAI_MODEL, ANTHROPIC_API_KEY, AI_PROVIDER
+# Required secrets: SMTP_USER, SMTP_PASSWORD, EMAIL_TO
+# Optional: OPENAI_API_KEY, AI_PROVIDER, ANTHROPIC_API_KEY
 
 name: LinkedIn Post Agent
 
 on:
   schedule:
-    # 9:00 IST
     - cron: "30 3 * * *"
-    # 14:00 IST
     - cron: "30 8 * * *"
-    # 19:00 IST
     - cron: "30 13 * * *"
   workflow_dispatch:
     inputs:
@@ -32,7 +26,7 @@ on:
         default: false
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   generate-post:
@@ -47,13 +41,13 @@ jobs:
           python-version: "3.12"
           cache: pip
 
-      - name: Install fonts (for infographic text on Linux)
+      - name: Install fonts
         run: sudo apt-get update && sudo apt-get install -y fonts-dejavu-core fonts-liberation
 
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run LinkedIn agent
+      - name: Run LinkedIn agent (email only)
         env:
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
@@ -61,10 +55,8 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_MODEL: ${{ secrets.OPENAI_MODEL || 'gpt-4o-mini' }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          ANTHROPIC_MODEL: ${{ secrets.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514' }}
+          ANTHROPIC_MODEL: ${{ secrets.ANTHROPIC_MODEL || 'claude-sonnet-4-6' }}
           AI_PROVIDER: ${{ secrets.AI_PROVIDER || 'openai' }}
-          IMAGE_PROVIDER: ${{ secrets.IMAGE_PROVIDER || 'auto' }}
-          OPENAI_IMAGE_MODEL: ${{ secrets.OPENAI_IMAGE_MODEL || 'gpt-image-1' }}
         run: |
           set -e
           ARGS=()
@@ -76,17 +68,3 @@ jobs:
             ARGS+=(--topic "$TOPIC")
           fi
           python run_agent.py "${ARGS[@]}"
-
-      - name: Persist topic history only
-        if: success()
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          mkdir -p data
-          git add -f data/post_history.json || true
-          if git diff --staged --quiet; then
-            echo "No history changes to commit"
-          else
-            git commit -m "chore: linkedin agent run $(date -u +%Y-%m-%dT%H:%MZ)"
-            git push
-          fi
