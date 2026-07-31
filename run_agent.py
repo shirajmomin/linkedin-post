@@ -467,11 +467,13 @@ def generate_post(topic: str | None = None, use_ai: bool = True) -> dict[str, An
         return _fallback_post(chosen)
 
     result.setdefault("topic", chosen)
-    # Fill missing visual fields from topic heuristics
+    # Image layout/content always comes from HUD visual briefs (AI writes post text only).
+    # This prevents old "workflow"/plain templates from slipping through.
     visual = _fallback_visual(result.get("topic") or chosen, result.get("hook") or chosen)
     for key, value in visual.items():
-        if not result.get(key):
+        if key == "image_layout" or not result.get(key):
             result[key] = value
+    result["image_layout"] = visual.get("image_layout") or "hud_alert"
     print("[linkedin] AI post generated")
     return result
 
