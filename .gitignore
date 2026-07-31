@@ -3,4 +3,5 @@
 __pycache__/
 *.pyc
 assets/*.png
-# drafts/ and data/post_history.json are written by GitHub Actions and may be committed by the workflow
+drafts/*
+!drafts/.gitkeep

@@ -77,26 +77,15 @@ jobs:
           fi
           python run_agent.py "${ARGS[@]}"
 
-      - name: Upload draft artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: linkedin-draft-${{ github.run_id }}
-          path: |
-            drafts/
-            data/post_history.json
-          if-no-files-found: ignore
-          retention-days: 30
-
-      - name: Persist topic history + latest drafts
+      - name: Persist topic history only
         if: success()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          mkdir -p data drafts
-          git add -f data/post_history.json drafts/*.md drafts/*.png || true
+          mkdir -p data
+          git add -f data/post_history.json || true
           if git diff --staged --quiet; then
-            echo "No history/draft changes to commit"
+            echo "No history changes to commit"
           else
             git commit -m "chore: linkedin agent run $(date -u +%Y-%m-%dT%H:%MZ)"
             git push
