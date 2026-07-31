@@ -230,44 +230,117 @@ def _profile_url() -> str:
 
 
 def _fallback_visual(topic: str, hook: str) -> dict[str, Any]:
+    """Unique infographic brief per topic — never reuse one generic card set."""
     t = topic.lower()
-    if "hl7" in t and "fhir" in t or "edi" in t:
+    short = hook if len(hook) <= 56 else " ".join(hook.split()[:8])
+
+    if "edi" in t or "837" in t or "834" in t:
         return {
             "image_layout": "split_compare",
             "accent_theme": "green_split",
-            "image_title": hook,
-            "image_subtitle": "Two standards. Two business realities.",
-            "left_label": "HL7 v2: Operational Tax",
-            "left_points": ["Point-to-point fragility", "High maintenance cost", "Hard to productize"],
-            "right_label": "FHIR: Growth Engine",
-            "right_points": ["Reusable APIs", "Faster onboarding", "Member-ready access"],
+            "image_title": "EDI roots → FHIR APIs",
+            "image_subtitle": "Keep the wisdom. Leave the coupling.",
+            "left_label": "EDI Era",
+            "left_points": ["Batch windows", "File coupling", "Partner-specific maps"],
+            "right_label": "FHIR Era",
+            "right_points": ["Interactive APIs", "Reusable contracts", "Member-ready access"],
+            "badge_labels": ["EDI", "X12", "FHIR", "API"],
             "steps": [],
             "bullets": [],
+        }
+    if "profile" in t or "extension" in t or "resource modeling" in t:
+        return {
+            "image_layout": "key_points",
+            "accent_theme": "teal",
+            "image_title": "Clean FHIR profiles",
+            "image_subtitle": "Constrain first. Extend only when needed.",
+            "left_label": "",
+            "left_points": [],
+            "right_label": "",
+            "right_points": [],
+            "badge_labels": ["Profile", "Binding", "Extension", "Contract"],
+            "steps": [],
+            "bullets": [
+                "Profiles + terminology bindings before custom extensions",
+                "One-off extensions become consumer debt",
+                "Ask: would a third-party app read this the same way?",
+                "Clean contracts scale — clever extensions rarely do",
+            ],
         }
     if "patient access" in t:
         return {
             "image_layout": "before_after",
             "accent_theme": "teal",
             "image_title": "Patient Access API",
-            "image_subtitle": "Compliance is not the same as member experience.",
+            "image_subtitle": "Compliance ≠ member experience",
             "left_label": "",
             "left_points": [],
             "right_label": "",
             "right_points": [],
-            "steps": ["Checklist go-live", "FHIR APIs", "Usable member apps"],
+            "badge_labels": ["Member", "EOB", "Auth", "Apps"],
+            "steps": ["Checklist go-live", "FHIR endpoints", "Usable member apps"],
             "bullets": [],
         }
-    if "pas" in t or "prior-auth" in t or "prior auth" in t or "crd" in t or "dtr" in t or "0057" in t:
+    if "directory" in t:
         return {
-            "image_layout": "dark_tech" if "pas" in t else "workflow",
-            "accent_theme": "dark_green" if "pas" in t else "blue",
-            "image_title": hook if len(hook) < 70 else "CMS-0057-F Prior Authorization",
-            "image_subtitle": "FHIR APIs for electronic prior authorization.",
+            "image_layout": "split_compare",
+            "accent_theme": "green_split",
+            "image_title": "Provider Directory quality",
+            "image_subtitle": "Valid FHIR can still fail members.",
+            "left_label": "Looks Fine",
+            "left_points": ["Valid resources", "Endpoints live", "Checklist passed"],
+            "right_label": "Still Broken",
+            "right_points": ["Stale phone/NPI", "Wrong network status", "No freshness owner"],
+            "badge_labels": ["NPI", "Network", "Freshness", "SLA"],
+            "steps": [],
+            "bullets": [],
+        }
+    if "crd" in t or "coverage requirement" in t:
+        return {
+            "image_layout": "workflow",
+            "accent_theme": "purple",
+            "image_title": "CMS-0057-F · CRD",
+            "image_subtitle": "Surface coverage rules at decision time.",
             "left_label": "",
             "left_points": [],
             "right_label": "",
             "right_points": [],
-            "steps": ["Provider initiates", "Send via FHIR", "Payer validates", "Decision returned", "Provider receives"],
+            "badge_labels": ["CRD", "CDS Hooks", "Coverage", "EHR"],
+            "steps": ["Order context", "CDS Hook", "Coverage rules", "Clinician sees ask"],
+            "bullets": [],
+        }
+    if "dtr" in t:
+        return {
+            "image_layout": "key_points",
+            "accent_theme": "orange",
+            "image_title": "CMS-0057-F · DTR",
+            "image_subtitle": "Questionnaires decide adoption.",
+            "left_label": "",
+            "left_points": [],
+            "right_label": "",
+            "right_points": [],
+            "badge_labels": ["DTR", "Questionnaire", "Pre-fill", "Clinic"],
+            "steps": [],
+            "bullets": [
+                "Vague templates create click-burden",
+                "Pre-populate from FHIR clinical resources",
+                "Make 'why we need this' explicit",
+                "Fix the questionnaire library before the transport",
+            ],
+        }
+    if "pas" in t:
+        return {
+            "image_layout": "dark_tech",
+            "accent_theme": "dark_green",
+            "image_title": short,
+            "image_subtitle": "A valid Bundle is still a multi-resource transaction.",
+            "left_label": "",
+            "left_points": [],
+            "right_label": "",
+            "right_points": [],
+            "badge_labels": ["Claim", "Coverage", "Request", "Actors"],
+            "hub_label": "PAS",
+            "steps": [],
             "bullets": [
                 "Claim — administrative backbone",
                 "ServiceRequest / DeviceRequest — clinical intent",
@@ -276,38 +349,21 @@ def _fallback_visual(topic: str, hook: str) -> dict[str, Any]:
                 "Practitioner & Organization — actors",
             ],
         }
-    if "azure" in t or "apim" in t or "api management" in t:
+    if "0057" in t or "prior auth" in t or "prior-auth" in t:
         return {
-            "image_layout": "key_points",
-            "accent_theme": "blue",
-            "image_title": "Azure APIM for FHIR APIs",
-            "image_subtitle": "Security and scale are product decisions.",
+            "image_layout": "workflow",
+            "accent_theme": "purple",
+            "image_title": "Prior Auth on FHIR",
+            "image_subtitle": "CRD → DTR → PAS as one operating model.",
             "left_label": "",
             "left_points": [],
             "right_label": "",
             "right_points": [],
-            "steps": [],
-            "bullets": [
-                "AuthZ boundaries and SMART scopes",
-                "Throttling for noisy consumers",
-                "Tracing across Patient Access / Directory / PA",
-                "Policies reviewed with architecture — not last-mile",
-            ],
-        }
-    if "directory" in t:
-        return {
-            "image_layout": "split_compare",
-            "accent_theme": "green_split",
-            "image_title": "Provider Directory quality",
-            "image_subtitle": "The FHIR can look fine while the data fails.",
-            "left_label": "Looks Fine",
-            "left_points": ["Valid resources", "Endpoints live", "Checklist passed"],
-            "right_label": "Still Broken",
-            "right_points": ["Stale phone/NPI", "Wrong network status", "No freshness owner"],
-            "steps": [],
+            "badge_labels": ["CRD", "DTR", "PAS", "FHIR"],
+            "steps": ["Provider initiates", "Send via FHIR", "Payer validates", "Decision returned", "Provider receives"],
             "bullets": [],
         }
-    if "bulk" in t or "export" in t:
+    if "bulk" in t or "$export" in t or "export" in t:
         return {
             "image_layout": "workflow",
             "accent_theme": "blue",
@@ -317,21 +373,160 @@ def _fallback_visual(topic: str, hook: str) -> dict[str, Any]:
             "left_points": [],
             "right_label": "",
             "right_points": [],
-            "steps": ["Kick off", "Poll status", "Download NDJSON", "Reconcile", "Alert on failure"],
+            "badge_labels": ["$export", "NDJSON", "Retry", "Audit"],
+            "steps": ["Kick off", "Poll status", "Download NDJSON", "Reconcile", "Alert"],
             "bullets": [],
         }
-    return {
-        "image_layout": "title_network",
-        "accent_theme": "blue",
-        "image_title": hook if len(hook) <= 48 else "FHIR & CMS Interoperability",
-        "image_subtitle": "Connectivity is not the same as coordination.",
-        "left_label": "FHIR",
-        "left_points": [],
-        "right_label": "CMS",
-        "right_points": [],
-        "steps": [],
-        "bullets": [],
+    if "azure" in t or "apim" in t or "api management" in t:
+        return {
+            "image_layout": "key_points",
+            "accent_theme": "blue",
+            "image_title": "Azure APIM for FHIR",
+            "image_subtitle": "Security and scale are product decisions.",
+            "left_label": "",
+            "left_points": [],
+            "right_label": "",
+            "right_points": [],
+            "badge_labels": ["APIM", "AuthZ", "Throttle", "Trace"],
+            "steps": [],
+            "bullets": [
+                "AuthZ boundaries and SMART scopes",
+                "Throttling for noisy consumers",
+                "Tracing across Patient Access / Directory / PA",
+                "Policies reviewed with architecture — not last-mile",
+            ],
+        }
+    if "smart" in t:
+        return {
+            "image_layout": "dark_tech",
+            "accent_theme": "navy",
+            "image_title": "SMART on FHIR launch",
+            "image_subtitle": "Security is an architecture choice.",
+            "hub_label": "SMART",
+            "left_label": "",
+            "left_points": [],
+            "right_label": "",
+            "right_points": [],
+            "badge_labels": ["Launch", "Token", "Scope", "Context"],
+            "steps": [],
+            "bullets": [
+                "Redirect hygiene and launch context integrity",
+                "Token lifetime and scope discipline",
+                "EHR vs standalone threat models differ",
+                "Test context spoofing before partner go-live",
+            ],
+        }
+    if "medicare" in t or "commercial" in t:
+        return {
+            "image_layout": "split_compare",
+            "accent_theme": "green_split",
+            "image_title": "Same FHIR. Different constraints.",
+            "image_subtitle": "Medicare vs commercial operating models.",
+            "left_label": "Medicare lines",
+            "left_points": ["Coverage constructs", "Network rules", "Identity resolution"],
+            "right_label": "Commercial lines",
+            "right_points": ["Product variation", "Partner SLAs", "Claims semantics"],
+            "badge_labels": ["Medicare", "Commercial", "FHIR", "Coverage"],
+            "steps": [],
+            "bullets": [],
+        }
+    if "leadership" in t or "sequencing" in t:
+        return {
+            "image_layout": "before_after",
+            "accent_theme": "orange",
+            "image_title": "Sequence the risk",
+            "image_subtitle": "Interop fails on delivery order, not standards.",
+            "left_label": "",
+            "left_points": [],
+            "right_label": "",
+            "right_points": [],
+            "badge_labels": ["Directory", "Access", "Prior Auth", "Own"],
+            "steps": ["Directory quality", "Identity & consent", "Patient Access", "Prior Auth APIs"],
+            "bullets": [],
+        }
+    if "ai " in t or "assistant" in t or t.startswith("how ai"):
+        return {
+            "image_layout": "key_points",
+            "accent_theme": "purple",
+            "image_title": "AI helps. Humans own contracts.",
+            "image_subtitle": "Accelerate drafts. Gate production semantics.",
+            "left_label": "",
+            "left_points": [],
+            "right_label": "",
+            "right_points": [],
+            "badge_labels": ["AI", "Draft", "Govern", "Sign-off"],
+            "steps": [],
+            "bullets": [
+                "AI can draft CapabilityStatements and mappings faster",
+                "Humans own when an extension is justified",
+                "Questionnaire UX still needs clinical judgment",
+                "Keep an architect gate on production sign-off",
+            ],
+        }
+    if "uscdi" in t or "us core" in t:
+        return {
+            "image_layout": "key_points",
+            "accent_theme": "teal",
+            "image_title": "USCDI & US Core",
+            "image_subtitle": "Mapping is consumer protection.",
+            "left_label": "",
+            "left_points": [],
+            "right_label": "",
+            "right_points": [],
+            "badge_labels": ["USCDI", "US Core", "Must Support", "Terms"],
+            "steps": [],
+            "bullets": [
+                "Stop every partner inventing a private dialect",
+                "Must Support choices show up in real apps",
+                "Map for the consumer — not warehouse comfort",
+                "Know what breaks if apps only trust US Core",
+            ],
+        }
+    if "test" in t or "synthetic" in t:
+        return {
+            "image_layout": "workflow",
+            "accent_theme": "orange",
+            "image_title": "Interop testing",
+            "image_subtitle": "Negative paths catch the real bugs.",
+            "left_label": "",
+            "left_points": [],
+            "right_label": "",
+            "right_points": [],
+            "badge_labels": ["Synthetic", "Negative", "Contract", "CI"],
+            "steps": ["Happy path", "Expired token", "Empty Bundle", "Conflict IDs", "Pended PA"],
+            "bullets": [],
+        }
+
+    # Last resort: still unique via topic hash (layout + theme + badges from topic words)
+    layouts = ["title_network", "key_points", "before_after", "dark_tech"]
+    themes = ["blue", "teal", "navy", "orange", "purple"]
+    h = abs(hash(topic)) 
+    layout = layouts[h % len(layouts)]
+    theme = themes[(h // 3) % len(themes)]
+    words = [w.strip("—,") for w in topic.replace("/", " ").split() if len(w) > 2][:4]
+    while len(words) < 4:
+        words.append("FHIR")
+    base = {
+        "image_layout": layout,
+        "accent_theme": theme,
+        "image_title": short,
+        "image_subtitle": "Standards create the contract. Delivery creates the outcome.",
+        "left_label": words[0][:16],
+        "left_points": ["Fragile integrations", "Hidden data debt", "Checklist theater"],
+        "right_label": words[1][:16],
+        "right_points": ["Reusable APIs", "Owned data quality", "Member impact"],
+        "badge_labels": [w[:14] for w in words],
+        "hub_label": "FHIR",
+        "steps": ["Design", "Contract", "Test", "Operate", "Improve"],
+        "bullets": [
+            f"Focus: {short}",
+            "Architecture and ownership beat demos",
+            "Data stewardship decides adoption",
+            "Measure member/clinician outcomes",
+        ],
     }
+    return base
+
 
 
 def _fallback_post(topic: str) -> dict[str, Any]:
