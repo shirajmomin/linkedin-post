@@ -10,7 +10,10 @@
     "CMS-0057-F \u2014 DTR and the documentation burden on clinicians and payers",
     "FHIR Bulk Data / $export \u2014 practical patterns for analytics pipelines",
     "SMART on FHIR and app launch \u2014 security tradeoffs architects must own",
-    "Medicare vs commercial payer interop \u2014 same standards, different constraints"
+    "Medicare vs commercial payer interop \u2014 same standards, different constraints",
+    "Technical leadership on interoperability programs \u2014 sequencing delivery risk",
+    "How AI assistants change FHIR implementation work \u2014 and what still needs humans",
+    "USCDI and FHIR US Core \u2014 mapping clinical data without breaking consumers"
   ],
   "posts": [
     {
@@ -131,6 +134,27 @@
       "path": "D:\\ShirajMomin\\cursor\\Agents\\linkedin-post\\drafts\\2026-07-31_205626.md",
       "image": "D:\\ShirajMomin\\cursor\\Agents\\linkedin-post\\drafts\\2026-07-31_205626.png",
       "hook": "Same FHIR standards. Different payer constraints."
+    },
+    {
+      "date": "2026-07-31",
+      "topic": "Technical leadership on interoperability programs \u2014 sequencing delivery risk",
+      "path": "/home/runner/work/linkedin-post/linkedin-post/drafts/2026-07-31_153855.md",
+      "image": "/home/runner/work/linkedin-post/linkedin-post/drafts/2026-07-31_153855.png",
+      "hook": "Interop programs fail on sequencing, not standards."
+    },
+    {
+      "date": "2026-07-31",
+      "topic": "How AI assistants change FHIR implementation work \u2014 and what still needs humans",
+      "path": "/home/runner/work/linkedin-post/linkedin-post/drafts/2026-07-31_154024.md",
+      "image": "/home/runner/work/linkedin-post/linkedin-post/drafts/2026-07-31_154024.png",
+      "hook": "AI helps FHIR work. Humans still own the contract."
+    },
+    {
+      "date": "2026-07-31",
+      "topic": "USCDI and FHIR US Core \u2014 mapping clinical data without breaking consumers",
+      "path": "/home/runner/work/linkedin-post/linkedin-post/drafts/2026-07-31_154135.md",
+      "image": "/home/runner/work/linkedin-post/linkedin-post/drafts/2026-07-31_154135.png",
+      "hook": "US Core mapping is consumer protection."
     }
   ]
 }
