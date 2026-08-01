@@ -1,10 +1,11 @@
-# Run LinkedIn Post Agent (email only — no local drafts/history)
+# Run LinkedIn Post Agent 3× daily (email only — no local drafts/history)
 #
-# TEMP TEST (public repo): every 5 minutes. After user confirms scheduled
-# emails, REVERT to 3× daily IST:
-#   - cron: "30 3 * * *"   # ~9:00 IST
-#   - cron: "30 8 * * *"   # ~14:00 IST
-#   - cron: "30 13 * * *"  # ~19:00 IST
+# Cron is UTC. Defaults ≈ 9:00 / 14:00 / 19:00 IST:
+#   03:30, 08:30, 13:30 UTC
+#
+# NOTE: GitHub `schedule` may never fire for some accounts/repos.
+# Prefer external cron → workflow_dispatch (see README / docs/SCHEDULE.md).
+# Manual "Run workflow" and repository_dispatch also work.
 #
 # Required secrets: SMTP_USER, SMTP_PASSWORD, EMAIL_TO
 # Optional: OPENAI_API_KEY, AI_PROVIDER, ANTHROPIC_API_KEY
@@ -13,8 +14,9 @@ name: LinkedIn Post Agent
 
 on:
   schedule:
-    # TEMP: every 5 min — revert after schedule email confirmation
-    - cron: "*/5 * * * *"
+    - cron: "30 3 * * *"
+    - cron: "30 8 * * *"
+    - cron: "30 13 * * *"
   workflow_dispatch:
     inputs:
       topic:
@@ -26,6 +28,8 @@ on:
         required: false
         type: boolean
         default: false
+  repository_dispatch:
+    types: [linkedin-post]
 
 permissions:
   contents: read
@@ -66,6 +70,9 @@ jobs:
             ARGS+=(--no-ai)
           fi
           TOPIC="${{ github.event.inputs.topic }}"
+          if [ -z "$TOPIC" ]; then
+            TOPIC="${{ github.event.client_payload.topic }}"
+          fi
           if [ -n "$TOPIC" ]; then
             ARGS+=(--topic "$TOPIC")
           fi
