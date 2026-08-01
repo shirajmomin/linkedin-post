@@ -1,7 +1,9 @@
-# Run LinkedIn Post Agent 3× daily (email only — no local drafts/history)
+# Run LinkedIn Post Agent (email only — no local drafts/history)
 #
-# Cron is UTC. Defaults ≈ 9:00 / 14:00 / 19:00 IST:
-#   03:30, 08:30, 13:30 UTC
+# TEMP TEST: every 5 minutes (UTC). Revert after testing to:
+#   - cron: "30 3 * * *"   # ~9:00 IST
+#   - cron: "30 8 * * *"   # ~14:00 IST
+#   - cron: "30 13 * * *"  # ~19:00 IST
 #
 # Required secrets: SMTP_USER, SMTP_PASSWORD, EMAIL_TO
 # Optional: OPENAI_API_KEY, AI_PROVIDER, ANTHROPIC_API_KEY
@@ -10,9 +12,8 @@ name: LinkedIn Post Agent
 
 on:
   schedule:
-    - cron: "30 3 * * *"
-    - cron: "30 8 * * *"
-    - cron: "30 13 * * *"
+    # TEMP: every 5 min for schedule testing — revert soon
+    - cron: "*/5 * * * *"
   workflow_dispatch:
     inputs:
       topic:
