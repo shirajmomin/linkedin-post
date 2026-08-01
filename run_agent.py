@@ -34,7 +34,7 @@ Patient Access, Provider Access, Payer-to-Payer, and Prior Authorization APIs ar
 Is your organization ready for 2027?
 
 #CMS0057F #FHIR #HealthcareIT #Interoperability #HealthTech""",
-        "image_layout": "hud_pillars",
+        "image_layout": "editorial_weekly",
         "accent_theme": "cyan",
         "alert_label": "COMPLIANCE FOCUS",
         "image_title": "CMS-0057-F is an opportunity",
@@ -58,7 +58,7 @@ PAS submits the authorization.
 FHIR is helping healthcare move toward real-time decisions.
 
 #PriorAuthorization #FHIR #DaVinci #HealthcareInnovation #CMS0057F""",
-        "image_layout": "hud_workflow",
+        "image_layout": "before_fhir_flow",
         "accent_theme": "lime",
         "alert_label": "PRIOR AUTH",
         "image_title": "CRD → DTR → PAS",
@@ -88,7 +88,7 @@ FHIR is helping healthcare move toward real-time decisions.
 What feature are you most excited about?
 
 #DotNet10 #HealthcareIT #FHIR #CloudArchitecture #HealthTech""",
-        "image_layout": "hud_hero",
+        "image_layout": "photo_overlay",
         "accent_theme": "sky",
         "alert_label": ".NET 10",
         "image_title": ".NET 10 for FHIR healthcare APIs",
@@ -109,7 +109,7 @@ FHIR-based Patient Access APIs are helping make that expectation a reality.
 Better access leads to better engagement.
 
 #PatientAccessAPI #FHIR #CMS0057F #DigitalHealth #Healthcare""",
-        "image_layout": "hud_points",
+        "image_layout": "clean_light_points",
         "accent_theme": "teal",
         "alert_label": "PATIENT ACCESS",
         "image_title": "Patients expect digital access",
@@ -133,7 +133,7 @@ Better access leads to better engagement.
 FHIR Provider Directory APIs help deliver standardized, searchable provider information across the healthcare ecosystem.
 
 #ProviderDirectory #FHIR #HealthcareData #Interoperability #HealthIT""",
-        "image_layout": "hud_grid",
+        "image_layout": "from_to_light",
         "accent_theme": "mint",
         "alert_label": "DIRECTORY",
         "image_title": "Accurate provider data",
@@ -156,7 +156,7 @@ FHIR Provider Directory APIs help deliver standardized, searchable provider info
 Payer-to-Payer Data Exchange helps ensure continuity of care and a better member experience.
 
 #PayerToPayer #FHIR #CMS0057F #HealthcareInteroperability #DigitalTransformation""",
-        "image_layout": "hud_stack",
+        "image_layout": "arch_boxes",
         "accent_theme": "amber",
         "alert_label": "P2P EXCHANGE",
         "image_title": "Data shouldn't stop at plan change",
@@ -186,7 +186,7 @@ Payer-to-Payer Data Exchange helps ensure continuity of care and a better member
 CDex enables the secure exchange of clinical documents, reducing delays and improving collaboration.
 
 #CDex #FHIR #ClinicalDataExchange #HealthcareIT #DaVinci""",
-        "image_layout": "hud_split",
+        "image_layout": "split_tax",
         "accent_theme": "emerald",
         "alert_label": "CDex",
         "image_title": "Clinical data without the delay",
@@ -228,7 +228,7 @@ OAuth 2.0, SMART on FHIR, and secure API design are key to protecting healthcare
 CDS Hooks brings real-time decision support directly into the clinical experience.
 
 #CDSHooks #FHIR #HealthcareInnovation #DigitalHealth #HealthIT""",
-        "image_layout": "hud_alert",
+        "image_layout": "editorial_weekly",
         "accent_theme": "navy",
         "alert_label": "CDS HOOKS",
         "image_title": "Coverage guidance in the workflow",
@@ -255,7 +255,7 @@ FHIR standards, cloud platforms, AI, and modern APIs are accelerating that trans
 Where do you see the biggest opportunity?
 
 #FHIR #HealthTech #HealthcareInnovation #DigitalTransformation #CMS0057F""",
-        "image_layout": "hud_quote",
+        "image_layout": "from_to_light",
         "accent_theme": "steel",
         "alert_label": "FUTURE",
         "image_title": "Where do you see the biggest opportunity?",
@@ -278,14 +278,14 @@ Leave behind the assumption that every journey must wait on a batch window. FHIR
 What EDI-era practice are you deliberately keeping in your FHIR program?
 
 #EDI #FHIR #X12 #HealthcareIT #Interoperability""",
-        "image_layout": "hud_split",
+        "image_layout": "split_tax",
         "accent_theme": "amber",
         "alert_label": "EDI → FHIR",
         "image_title": "Keep EDI wisdom. Leave EDI coupling.",
         "highlight": "Batch heritage → interactive contracts",
-        "left_label": "EDI Era",
+        "left_label": "HL7 v2: Operational Tax",
         "left_points": ["Batch windows", "Point-to-point", "File-based partners"],
-        "right_label": "FHIR Era",
+        "right_label": "FHIR: Growth Engine",
         "right_points": ["Interactive APIs", "Reusable contracts", "Member-ready access"],
         "bullets": ["Keep reconciliation discipline", "Modernize transport & contracts", "Design for interactive consumers"],
         "badge_labels": ["EDI", "X12", "FHIR", "APIs"],
@@ -305,7 +305,7 @@ Treat the Azure stack as part of your interop design review — not a last-mile 
 What is one Azure control you refuse to ship without on a healthcare API?
 
 #Azure #FHIR #APIManagement #HealthcareArchitecture #HealthTech""",
-        "image_layout": "hud_hero",
+        "image_layout": "photo_overlay",
         "accent_theme": "sky",
         "alert_label": "AZURE + FHIR",
         "image_title": "Azure + FHIR architecture",
@@ -326,7 +326,7 @@ In production, the hard parts are tenancy isolation, partial failure, re-export 
 Design the operational contract first — then celebrate the happy-path demo.
 
 #BulkFHIR #FHIR #HealthcareAnalytics #Interoperability #HealthIT""",
-        "image_layout": "hud_points",
+        "image_layout": "clean_light_points",
         "accent_theme": "teal",
         "alert_label": "BULK FHIR",
         "image_title": "Bulk FHIR needs an ops contract",
@@ -349,7 +349,7 @@ Modernize the frontend and the interoperability contract together.
 What breaks first for your members today — UX, auth, or incomplete data?
 
 #React #NextJS #PatientPortal #FHIR #DigitalHealth""",
-        "image_layout": "hud_grid",
+        "image_layout": "editorial_weekly",
         "accent_theme": "mint",
         "alert_label": "PORTALS",
         "image_title": "Modern UI needs a modern FHIR contract",
@@ -372,7 +372,7 @@ Standards create the contract language. Governance creates the operating model.
 Who owns API standards in your organization today?
 
 #APIGovernance #FHIR #HealthcareArchitecture #CMSInteroperability #HealthIT""",
-        "image_layout": "hud_stack",
+        "image_layout": "arch_boxes",
         "accent_theme": "navy",
         "alert_label": "GOVERNANCE",
         "image_title": "API governance is the operating model",
@@ -396,7 +396,7 @@ Event-driven patterns help, but only when contracts and ownership are explicit.
 Where is your hardest seam today: clinical, claims, or identity?
 
 #Microservices #FHIR #CloudNative #HealthcareArchitecture #HealthTech""",
-        "image_layout": "hud_pillars",
+        "image_layout": "before_fhir_flow",
         "accent_theme": "coral",
         "alert_label": "PLATFORM",
         "image_title": "Cut services on domain seams",
@@ -419,7 +419,7 @@ Map for the consumer app, not only for internal warehouse comfort.
 If a partner only trusted US Core, what would break first in your feed?
 
 #USCore #FHIR #CARIN #Interoperability #HealthcareData""",
-        "image_layout": "hud_alert",
+        "image_layout": "from_to_light",
         "accent_theme": "emerald",
         "alert_label": "US CORE",
         "image_title": "US Core is consumer protection",
@@ -537,14 +537,14 @@ def _fallback_visual(topic: str, hook: str) -> dict[str, Any]:
     import hashlib
 
     layouts = [
-        "hud_alert",
+        "editorial_weekly",
+        "split_tax",
+        "before_fhir_flow",
+        "from_to_light",
+        "clean_light_points",
+        "arch_boxes",
+        "photo_overlay",
         "hud_workflow",
-        "hud_pillars",
-        "hud_quote",
-        "hud_split",
-        "hud_points",
-        "hud_grid",
-        "hud_stack",
         "hud_security",
         "hud_hero",
     ]
@@ -644,6 +644,13 @@ def generate_post(topic: str | None = None, use_ai: bool = True) -> dict[str, An
     visual = _fallback_visual(result.get("topic") or chosen, result.get("hook") or chosen)
     # Fill missing visual fields; keep AI layout/theme when present and valid
     valid_layouts = {
+        "editorial_weekly",
+        "split_tax",
+        "before_fhir_flow",
+        "from_to_light",
+        "clean_light_points",
+        "arch_boxes",
+        "photo_overlay",
         "hud_alert",
         "hud_workflow",
         "hud_pillars",

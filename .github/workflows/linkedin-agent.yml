@@ -63,6 +63,9 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           ANTHROPIC_MODEL: ${{ secrets.ANTHROPIC_MODEL || 'claude-sonnet-4-6' }}
           AI_PROVIDER: ${{ secrets.AI_PROVIDER || 'openai' }}
+          IMAGE_PROVIDER: ${{ secrets.IMAGE_PROVIDER || 'local' }}
+          OPENAI_IMAGE_MODEL: ${{ secrets.OPENAI_IMAGE_MODEL || 'dall-e-3' }}
+          OPENAI_IMAGE_SIZE: ${{ secrets.OPENAI_IMAGE_SIZE || '1024x1792' }}
         run: |
           set -e
           ARGS=()

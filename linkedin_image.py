@@ -1,7 +1,8 @@
-"""Premium LinkedIn HUD / HealthTech visuals (1080x1350).
+"""LinkedIn HealthTech visuals (1080x1350).
 
-10+ distinct layouts + color themes so every post image looks unique.
-No photo/skeleton backgrounds. No author name on the image.
+Diverse families: light editorial, split compare, before/after flow, architecture
+boxes, photo overlay — plus optional dark HUD. Optional OpenAI photo backgrounds.
+No author name on the image.
 """
 
 from __future__ import annotations
@@ -752,7 +753,300 @@ def _layout_hud_hero(post: dict[str, Any], fonts: dict[str, Any]) -> Any:
     return img
 
 
+# --- Light / editorial styles (sample-inspired, not dark teal HUD) -------------
+
+
+def _layout_editorial_weekly(post: dict[str, Any], fonts: dict[str, Any]) -> Any:
+    """Cream + navy brand block + bold headline (Healthcare Data Weekly style)."""
+    from PIL import Image, ImageDraw
+
+    bg = (253, 248, 245)
+    navy = (10, 28, 62)
+    gold = (253, 185, 19)
+    img = Image.new("RGB", (WIDTH, HEIGHT), bg)
+    d = ImageDraw.Draw(img)
+
+    # Brand square
+    d.rectangle([72, 220, 420, 620], fill=navy)
+    d.text((100, 280), "Healthcare", font=fonts["h2"], fill=(255, 255, 255))
+    d.text((100, 330), "Data", font=fonts["h2"], fill=(255, 255, 255))
+    d.text((100, 400), "Weekly", font=fonts["hero"], fill=gold)
+
+    title = (post.get("image_title") or post.get("hook") or "FHIR Catalysts").strip()
+    y = 240
+    for line in _wrap(title, fonts["display"], 560, d)[:5]:
+        d.text((460, y), line, font=fonts["display"], fill=navy)
+        y += 72
+
+    sub = (post.get("highlight") or post.get("image_subtitle") or "Regulation & AI").strip()
+    y += 20
+    for line in _wrap(sub, fonts["h2"], 560, d)[:3]:
+        d.text((460, y), line, font=fonts["h2"], fill=navy)
+        y += 44
+
+    cta = (post.get("cta") or "").strip()
+    if cta:
+        d.text((72, HEIGHT - 120), cta[:70], font=fonts["body"], fill=(80, 90, 110))
+    return img
+
+
+def _layout_split_tax(post: dict[str, Any], fonts: dict[str, Any]) -> Any:
+    """Gray vs green split — HL7 v2 operational tax vs FHIR growth engine."""
+    from PIL import Image, ImageDraw
+
+    gray = (109, 110, 112)
+    green = (40, 167, 69)
+    img = Image.new("RGB", (WIDTH, HEIGHT), (255, 255, 255))
+    d = ImageDraw.Draw(img)
+    mid = WIDTH // 2
+    d.rectangle([0, 0, mid, HEIGHT], fill=gray)
+    d.rectangle([mid, 0, WIDTH, HEIGHT], fill=green)
+    d.line([(mid, 0), (mid, HEIGHT)], fill=(255, 255, 255), width=6)
+
+    # Left: broken chain metaphor (simple shapes)
+    cx, cy = mid // 2, HEIGHT // 2 - 80
+    for i, xoff in enumerate((-70, 0, 70)):
+        d.ellipse([cx + xoff - 36, cy - 28, cx + xoff + 36, cy + 28], outline=(20, 20, 20), width=10)
+    d.rectangle([cx - 20, cy - 8, cx + 20, cy + 8], fill=gray)
+    d.ellipse([cx - 12, cy + 50, cx + 12, cy + 74], fill=(20, 20, 20))
+    d.ellipse([cx - 8, cy + 90, cx + 8, cy + 106], fill=(20, 20, 20))
+
+    left_label = post.get("left_label") or "HL7 v2: Operational Tax"
+    for i, line in enumerate(_wrap(str(left_label), fonts["h2"], mid - 80, d)[:3]):
+        tw = d.textlength(line, font=fonts["h2"])
+        d.text(((mid - tw) / 2, HEIGHT - 220 + i * 40), line, font=fonts["h2"], fill=(255, 255, 255))
+
+    # Right: rocket + bars
+    rx, ry = mid + mid // 2, HEIGHT // 2 - 120
+    d.polygon([(rx, ry - 80), (rx + 50, ry + 40), (rx - 50, ry + 40)], fill=(255, 255, 255))
+    for i, h in enumerate((40, 70, 100, 130, 160)):
+        x0 = rx - 90 + i * 40
+        d.rectangle([x0, ry + 80 + (160 - h), x0 + 28, ry + 240], fill=(255, 255, 255))
+
+    right_label = post.get("right_label") or "FHIR: Growth Engine"
+    for i, line in enumerate(_wrap(str(right_label), fonts["h2"], mid - 80, d)[:3]):
+        tw = d.textlength(line, font=fonts["h2"])
+        d.text((mid + (mid - tw) / 2, HEIGHT - 220 + i * 40), line, font=fonts["h2"], fill=(255, 255, 255))
+    return img
+
+
+def _layout_before_fhir_flow(post: dict[str, Any], fonts: dict[str, Any]) -> Any:
+    """White Before → FHIR → After horizontal story."""
+    from PIL import Image, ImageDraw
+
+    img = Image.new("RGB", (WIDTH, HEIGHT), (255, 255, 255))
+    d = ImageDraw.Draw(img)
+    navy = (15, 40, 80)
+    orange = (242, 140, 40)
+    teal = (0, 150, 160)
+    gray = (120, 120, 120)
+
+    title = (post.get("image_title") or "Data Movement. Solved.").strip()
+    y = 120
+    for line in _wrap(title, fonts["hero"], WIDTH - 100, d)[:2]:
+        tw = d.textlength(line, font=fonts["hero"])
+        d.text(((WIDTH - tw) / 2, y), line, font=fonts["hero"], fill=navy)
+        y += 60
+
+    # Three stages
+    stages = [
+        ("Before FHIR", gray, post.get("left_label") or "Legacy silos"),
+        ("FHIR", orange, post.get("highlight") or "Standards catalyst"),
+        ("After FHIR", teal, post.get("right_label") or "Connected cloud"),
+    ]
+    xs = [180, 540, 900]
+    cy = 520
+    for (label, color, detail), x in zip(stages, xs):
+        if label == "FHIR":
+            # flame-like triangle stack
+            d.polygon([(x, cy - 100), (x + 55, cy + 40), (x - 55, cy + 40)], fill=color)
+            d.polygon([(x, cy - 60), (x + 35, cy + 30), (x - 35, cy + 30)], fill=(255, 200, 120))
+        elif label.startswith("Before"):
+            for i in range(3):
+                d.rectangle([x - 50, cy - 70 + i * 45, x + 50, cy - 40 + i * 45], outline=color, width=4)
+        else:
+            d.ellipse([x - 55, cy - 50, x + 55, cy + 20], outline=color, width=5)
+            for ox in (-30, 0, 30):
+                d.ellipse([x + ox - 12, cy + 40, x + ox + 12, cy + 64], fill=color)
+
+        tw = d.textlength(label, font=fonts["h3"])
+        d.text((x - tw / 2, cy + 100), label, font=fonts["h3"], fill=color)
+        for j, line in enumerate(_wrap(str(detail), fonts["small"], 220, d)[:2]):
+            tw2 = d.textlength(line, font=fonts["small"])
+            d.text((x - tw2 / 2, cy + 150 + j * 28), line, font=fonts["small"], fill=navy)
+
+    # arrows
+    d.line([(260, 500), (420, 500)], fill=gray, width=4)
+    d.polygon([(420, 490), (440, 500), (420, 510)], fill=gray)
+    d.line([(640, 500), (800, 500)], fill=teal, width=4)
+    d.polygon([(800, 490), (820, 500), (800, 510)], fill=teal)
+
+    tag = (post.get("cta") or "Data Movement. Solved.").strip()
+    tw = d.textlength(tag[:50], font=fonts["h2"])
+    d.text(((WIDTH - tw) / 2, HEIGHT - 200), tag[:50], font=fonts["h2"], fill=navy)
+    foot = (post.get("footer_note") or "#FHIR #HealthcareModernisation")[:60]
+    tw = d.textlength(foot, font=fonts["small"])
+    d.text(((WIDTH - tw) / 2, HEIGHT - 120), foot, font=fonts["small"], fill=gray)
+    return img
+
+
+def _layout_from_to_light(post: dict[str, Any], fonts: dict[str, Any]) -> Any:
+    """Light blue dotted grid — From FHIR to TEFCA style."""
+    from PIL import Image, ImageDraw
+
+    img = Image.new("RGB", (WIDTH, HEIGHT), (240, 248, 255))
+    d = ImageDraw.Draw(img)
+    navy = (20, 45, 90)
+    blue = (50, 120, 200)
+
+    # dotted grid
+    for x in range(40, WIDTH, 40):
+        for y in range(40, HEIGHT, 40):
+            d.ellipse([x, y, x + 3, y + 3], fill=(190, 210, 230))
+
+    # floating cards
+    for box, label in (
+        ((60, 80, 280, 200), "FHIR"),
+        ((800, 100, 1020, 220), ""),
+        ((80, 1100, 300, 1220), ""),
+        ((780, 1080, 1000, 1220), "TEFCA"),
+    ):
+        d.rounded_rectangle(list(box), radius=18, outline=blue, width=2, fill=(255, 255, 255))
+        if label:
+            d.text((box[0] + 24, box[1] + 40), label, font=fonts["h3"], fill=blue)
+
+    left = (post.get("left_label") or "From").strip()
+    mid = (post.get("image_title") or "FHIR").strip()
+    right_word = (post.get("right_label") or "to").strip()
+    end = (post.get("highlight") or "TEFCA").strip()
+
+    y = 420
+    for word, font, color in (
+        (left, fonts["h1"], navy),
+        (mid, fonts["display"], blue),
+        (right_word, fonts["h1"], navy),
+        (end, fonts["display"], blue),
+    ):
+        tw = d.textlength(word[:28], font=font)
+        d.text(((WIDTH - tw) / 2, y), word[:28], font=font, fill=color)
+        y += 90
+
+    cta = (post.get("cta") or "").strip()
+    if cta:
+        tw = d.textlength(cta[:60], font=fonts["body"])
+        d.text(((WIDTH - tw) / 2, HEIGHT - 160), cta[:60], font=fonts["body"], fill=navy)
+    return img
+
+
+def _layout_clean_light_points(post: dict[str, Any], fonts: dict[str, Any]) -> Any:
+    """Bright white card list — not dark HUD."""
+    from PIL import Image, ImageDraw
+
+    img = Image.new("RGB", (WIDTH, HEIGHT), (248, 250, 252))
+    d = ImageDraw.Draw(img)
+    navy = (15, 35, 70)
+    accent = (0, 120, 140)
+    d.rectangle([0, 0, WIDTH, 16], fill=accent)
+
+    title = (post.get("image_title") or post.get("hook") or "FHIR Interoperability").strip()
+    y = 80
+    for line in _wrap(title, fonts["hero"], WIDTH - 100, d)[:3]:
+        d.text((50, y), line, font=fonts["hero"], fill=navy)
+        y += 62
+    sub = (post.get("highlight") or "").strip()
+    if sub:
+        d.text((50, y), sub[:70], font=fonts["h3"], fill=accent)
+        y += 50
+
+    bullets = list(post.get("bullets") or ["Insight one", "Insight two", "Insight three", "Insight four"])[:4]
+    y += 30
+    for i, b in enumerate(bullets):
+        d.rounded_rectangle([50, y, WIDTH - 50, y + 160], radius=20, fill=(255, 255, 255), outline=(210, 220, 230), width=2)
+        d.ellipse([80, y + 55, 130, y + 105], fill=accent)
+        d.text((92, y + 65), f"{i + 1}", font=fonts["h3"], fill=(255, 255, 255))
+        ty = y + 45
+        for line in _wrap(str(b), fonts["h3"], WIDTH - 240, d)[:2]:
+            d.text((160, ty), line, font=fonts["h3"], fill=navy)
+            ty += 36
+        y += 180
+
+    cta = (post.get("cta") or "").strip()
+    if cta:
+        d.text((50, HEIGHT - 80), cta[:70], font=fonts["body"], fill=(90, 100, 120))
+    return img
+
+
+def _layout_arch_boxes(post: dict[str, Any], fonts: dict[str, Any]) -> Any:
+    """Simple architecture flow boxes (MCP / API style diagram)."""
+    from PIL import Image, ImageDraw
+
+    img = Image.new("RGB", (WIDTH, HEIGHT), (255, 255, 255))
+    d = ImageDraw.Draw(img)
+    navy = (20, 40, 80)
+    colors = [(66, 133, 244), (142, 68, 173), (39, 174, 96), (230, 126, 34), (192, 57, 43)]
+
+    title = (post.get("image_title") or "FHIR Architecture").strip()
+    d.text((50, 50), title[:48], font=fonts["h1"], fill=navy)
+    sub = (post.get("highlight") or post.get("image_subtitle") or "").strip()
+    if sub:
+        d.text((50, 110), sub[:70], font=fonts["body"], fill=(100, 110, 130))
+
+    steps = list(post.get("steps") or post.get("bullets") or ["Client", "API Gateway", "FHIR Server", "Resources"])[:5]
+    y = 200
+    for i, step in enumerate(steps):
+        color = colors[i % len(colors)]
+        d.rounded_rectangle([120, y, WIDTH - 120, y + 110], radius=16, fill=color)
+        d.text((160, y + 35), str(step)[:48], font=fonts["h2"], fill=(255, 255, 255))
+        if i < len(steps) - 1:
+            d.polygon([(WIDTH // 2 - 16, y + 118), (WIDTH // 2 + 16, y + 118), (WIDTH // 2, y + 140)], fill=navy)
+        y += 160
+
+    # tech footer chips
+    badges = list(post.get("badge_labels") or ["FHIR", "API", "Security", "Cloud"])[:4]
+    bx = 80
+    for b in badges:
+        tw = int(d.textlength(str(b)[:14], font=fonts["small"]))
+        d.rounded_rectangle([bx, HEIGHT - 100, bx + tw + 36, HEIGHT - 55], radius=12, outline=navy, width=2)
+        d.text((bx + 18, HEIGHT - 88), str(b)[:14], font=fonts["small"], fill=navy)
+        bx += tw + 52
+    return img
+
+
+def _layout_photo_overlay(post: dict[str, Any], fonts: dict[str, Any], base: Any | None = None) -> Any:
+    """Title overlay on AI/photo background, or gradient fallback."""
+    from PIL import Image, ImageDraw
+
+    if base is None:
+        img = Image.new("RGB", (WIDTH, HEIGHT))
+        _gradient(img, (20, 40, 70), (180, 200, 220))
+    else:
+        img = base.convert("RGB").resize((WIDTH, HEIGHT))
+
+    # dark scrim for readability
+    overlay = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 0))
+    od = ImageDraw.Draw(overlay)
+    od.rectangle([0, 0, WIDTH, 320], fill=(8, 20, 40, 170))
+    od.rectangle([0, HEIGHT - 200, WIDTH, HEIGHT], fill=(8, 20, 40, 160))
+    img = Image.alpha_composite(img.convert("RGBA"), overlay).convert("RGB")
+    d = ImageDraw.Draw(img)
+
+    title = (post.get("image_title") or post.get("hook") or "FHIR Interoperability").strip()
+    y = 60
+    for line in _wrap(title, fonts["hero"], WIDTH - 80, d)[:3]:
+        d.text((40, y), line, font=fonts["hero"], fill=(255, 255, 255))
+        y += 58
+    sub = (post.get("highlight") or post.get("image_subtitle") or "").strip()
+    if sub:
+        d.text((40, y + 10), sub[:70], font=fonts["h3"], fill=(120, 220, 255))
+
+    cta = (post.get("cta") or "").strip()
+    if cta:
+        d.text((40, HEIGHT - 120), cta[:70], font=fonts["h3"], fill=(255, 255, 255))
+    return img
+
+
 LAYOUTS = {
+    # Dark HUD family
     "hud_alert": _layout_hud_alert,
     "hud_workflow": _layout_hud_workflow,
     "hud_pillars": _layout_hud_pillars,
@@ -763,25 +1057,37 @@ LAYOUTS = {
     "hud_stack": _layout_hud_stack,
     "hud_security": _layout_hud_security,
     "hud_hero": _layout_hud_hero,
+    # Light / editorial family (sample-inspired)
+    "editorial_weekly": _layout_editorial_weekly,
+    "split_tax": _layout_split_tax,
+    "before_fhir_flow": _layout_before_fhir_flow,
+    "from_to_light": _layout_from_to_light,
+    "clean_light_points": _layout_clean_light_points,
+    "arch_boxes": _layout_arch_boxes,
+    "photo_overlay": _layout_photo_overlay,
+    # aliases
     "dark_tech": _layout_hud_alert,
-    "split_compare": _layout_hud_split,
-    "key_points": _layout_hud_points,
-    "before_after": _layout_hud_stack,
+    "split_compare": _layout_split_tax,
+    "key_points": _layout_clean_light_points,
+    "before_after": _layout_before_fhir_flow,
     "workflow": _layout_hud_workflow,
-    "title_network": _layout_hud_quote,
+    "title_network": _layout_from_to_light,
 }
 
 UNIQUE_LAYOUT_KEYS = [
-    "hud_alert",
+    "editorial_weekly",
+    "split_tax",
+    "before_fhir_flow",
+    "from_to_light",
+    "clean_light_points",
+    "arch_boxes",
     "hud_workflow",
     "hud_pillars",
-    "hud_quote",
-    "hud_split",
-    "hud_points",
-    "hud_grid",
-    "hud_stack",
     "hud_security",
     "hud_hero",
+    "hud_quote",
+    "hud_grid",
+    "photo_overlay",
 ]
 
 
@@ -805,19 +1111,58 @@ def _enrich(post: dict[str, Any]) -> dict[str, Any]:
     return p
 
 
+def _image_prompt(post: dict[str, Any]) -> str:
+    title = post.get("image_title") or post.get("hook") or "healthcare interoperability"
+    topic = post.get("topic") or title
+    return (
+        f"Professional LinkedIn health-tech cover photo for: {topic}. "
+        f"Mood: {title}. Modern hospital or data-center setting, collaborative healthcare IT professionals, "
+        "subtle digital network / cloud connectivity overlay in cyan, clean corporate photography, "
+        "shallow depth of field, bright natural lighting, no readable text, no logos, no watermarks, "
+        "vertical portrait composition 4:5."
+    )
+
+
 def create_post_image(post: dict[str, Any], out_path: Path) -> Path:
     global WIDTH, HEIGHT
+
+    from io import BytesIO
+
+    from PIL import Image
+
+    from common import env
 
     post = _enrich(post)
     layout = post["image_layout"]
     WIDTH, HEIGHT = 1080, 1350
     fonts = _fonts(scale=1)
 
-    img = LAYOUTS[layout](post, fonts)
+    img = None
+    provider = env("IMAGE_PROVIDER", "local").lower()
+    # OpenAI (or auto) for photo-style covers; always fall back to Pillow layouts
+    if provider in ("openai", "auto") and layout in ("photo_overlay", "hud_hero", "title_network"):
+        try:
+            from ai import generate_ai_image
+
+            raw = generate_ai_image(_image_prompt(post))
+            if raw:
+                base = Image.open(BytesIO(raw))
+                img = _layout_photo_overlay(post, fonts, base)
+                print(f"[image] OpenAI photo + overlay -> {out_path.name}")
+        except Exception as exc:  # noqa: BLE001
+            print(f"[image] OpenAI path skipped: {exc}")
+
+    if img is None:
+        # Prefer non-HUD variety: if pack still requests old hud_*, randomly swap ~40% to light styles
+        if layout.startswith("hud_") and secrets.randbelow(5) < 2:
+            layout = UNIQUE_LAYOUT_KEYS[_seed(post) % 6]  # first 6 are light/editorial
+            post["image_layout"] = layout
+        img = LAYOUTS[layout](post, fonts)
+        print(f"[image] '{layout}' / theme={post.get('accent_theme')} -> {out_path.name}")
+
     if img.mode != "RGB":
         img = img.convert("RGB")
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     img.save(out_path, format="PNG", compress_level=4)
-    print(f"[image] '{layout}' / theme={post.get('accent_theme')} -> {out_path.name}")
     return out_path

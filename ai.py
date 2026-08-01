@@ -96,13 +96,14 @@ def _openai_image(prompt: str) -> bytes | None:
         return None
 
     model = env("OPENAI_IMAGE_MODEL", "dall-e-3")
-    size = env("OPENAI_IMAGE_SIZE", "1792x1024")
+    # Portrait LinkedIn-friendly sizes
+    size = env("OPENAI_IMAGE_SIZE", "1024x1792")
     quality = env("OPENAI_IMAGE_QUALITY", "standard")
     safe_prompt = (
         f"{prompt.strip()}\n\n"
-        "Strict rules: absolutely no text, letters, numbers, logos, watermarks, "
-        "brand names, or readable UI chrome. High-end editorial style. "
-        "LinkedIn post cover, landscape composition, professional healthcare technology mood."
+        "Strict rules: no readable text, letters, numbers, logos, watermarks, or brand names. "
+        "High-end corporate healthcare technology photography or clean editorial illustration. "
+        "Vertical LinkedIn cover composition."
     )
 
     try:
@@ -118,8 +119,10 @@ def _openai_image(prompt: str) -> bytes | None:
         }
         if model.startswith("dall-e"):
             kwargs["quality"] = quality
+            # DALL·E 3 portrait
+            if size not in ("1024x1024", "1024x1792", "1792x1024"):
+                kwargs["size"] = "1024x1792"
         elif quality:
-            # gpt-image-* accepts low|medium|high|auto
             kwargs["quality"] = quality if quality in ("low", "medium", "high", "auto") else "high"
 
         resp = client.images.generate(**kwargs)
@@ -137,28 +140,28 @@ def _openai_image(prompt: str) -> bytes | None:
 
 
 def _pollinations_image(prompt: str) -> bytes | None:
-    """Free Flux image fallback. Skip if output is unreliable; stock photos are preferred."""
+    """Optional free Flux fallback (enable with IMAGE_POLLINATIONS=1)."""
     if env("IMAGE_POLLINATIONS", "0") not in ("1", "true", "yes"):
         return None
     clean = re.sub(r"\s+", " ", prompt.strip())[:400]
     clean = (
-        f"professional LinkedIn banner photo, {clean}, "
-        "photorealistic, sharp focus, no text, no watermark, no logo, cinematic"
+        f"professional LinkedIn cover photo, {clean}, "
+        "photorealistic, sharp focus, no text, no watermark, no logo, cinematic, vertical"
     )
     encoded = urllib.parse.quote(clean)
     seed = abs(hash(clean)) % 99999
     url = (
         f"https://image.pollinations.ai/prompt/{encoded}"
-        f"?width=1200&height=627&seed={seed}&nologo=true&model=flux"
+        f"?width=1080&height=1350&seed={seed}&nologo=true&model=flux"
     )
     print("[image] Trying Pollinations Flux…")
     return _download(url, timeout=180)
 
 
 def generate_ai_image(prompt: str) -> bytes | None:
-    """Generate a LinkedIn-ready landscape image (OpenAI, optional Pollinations)."""
-    provider = env("IMAGE_PROVIDER", "auto").lower()
-    if provider in ("", "none", "local", "stock"):
+    """Generate a LinkedIn-ready image (OpenAI, optional Pollinations)."""
+    provider = env("IMAGE_PROVIDER", "local").lower()
+    if provider in ("", "none", "local", "stock", "pillow"):
         return None
 
     if provider in ("openai", "auto"):

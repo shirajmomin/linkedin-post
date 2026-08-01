@@ -66,18 +66,20 @@ Writing style:
 - Hashtags on the LAST line only (5–8 relevant tags)
 - NO author name. NO "I'm thrilled". NO emoji spam
 
-Also design the IMAGE brief. image_layout MUST be ONE of these distinct layouts
-(pick the best fit — rotate; do not reuse the same layout every time):
-- "hud_pillars" — four API / capability pillars
-- "hud_workflow" — numbered process (e.g. CRD → DTR → PAS)
-- "hud_hero" — big title for platform / .NET / Azure themes
-- "hud_points" — numbered insight cards
-- "hud_grid" — 2×2 feature cards
-- "hud_stack" — vertical connected steps
-- "hud_split" — two-column compare (legacy vs FHIR, without vs with)
-- "hud_security" — OAuth / SMART / trust cards
-- "hud_alert" — alert pill + bullets
-- "hud_quote" — big question / future vision
+Also design the IMAGE brief. Prefer DIVERSE visual styles — rotate across families
+(do NOT always pick dark neon HUD / teal):
+
+Light / editorial (preferred variety):
+- "editorial_weekly" — cream background, navy brand block, bold headline
+- "split_tax" — gray vs green split (legacy tax vs FHIR growth)
+- "before_fhir_flow" — Before → FHIR → After on white
+- "from_to_light" — light blue dotted grid, From X to Y typography
+- "clean_light_points" — white cards with numbered insights
+- "arch_boxes" — colored architecture flow boxes
+- "photo_overlay" — photo-style cover (title overlay)
+
+Dark HUD (use sparingly):
+- "hud_pillars" · "hud_workflow" · "hud_hero" · "hud_security" · "hud_quote" · "hud_grid"
 
 accent_theme must be ONE of: lime | cyan | teal | amber | coral | steel | mint | sky | navy | emerald
 
