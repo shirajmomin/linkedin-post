@@ -5,4 +5,5 @@ __pycache__/
 drafts/
 data/
 assets/*.png
+.last_image_concept.json
 _extract_content.py
