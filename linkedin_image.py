@@ -169,28 +169,49 @@ def _wrap(text: str, font: Any, max_w: int, draw: Any) -> list[str]:
     return lines
 
 
-def _short_headline(post: dict[str, Any], max_words: int = 8) -> str:
+def _short_headline(post: dict[str, Any], max_words: int = 12) -> str:
     raw = (post.get("image_title") or post.get("hook") or post.get("topic") or "FHIR Interoperability").strip()
     words = raw.split()
     return " ".join(words[:max_words])
 
 
-def _short_support(post: dict[str, Any], max_words: int = 6) -> str:
-    raw = (post.get("highlight") or post.get("image_subtitle") or post.get("cta") or "").strip()
+def _short_support(post: dict[str, Any], max_words: int = 12) -> str:
+    raw = (post.get("highlight") or post.get("image_subtitle") or post.get("intro") or "").strip()
     if not raw:
         return ""
     return " ".join(raw.split()[:max_words])
 
 
-def _cards(post: dict[str, Any], n: int = 4) -> list[str]:
+def _cards(post: dict[str, Any], n: int = 4, max_words: int = 10) -> list[str]:
     items = list(post.get("bullets") or post.get("steps") or post.get("badge_labels") or [])
     if not items:
-        items = ["FHIR APIs", "CMS Interop", "Prior Auth", "Cloud Scale"]
+        items = [
+            "Patient Access APIs ready for members",
+            "Prior Auth CRD DTR PAS connected",
+            "Provider Directory data kept fresh",
+            "Security with SMART and OAuth 2.0",
+        ]
     out = []
     for x in items[:n]:
-        out.append(" ".join(str(x).split()[:4]))
+        out.append(" ".join(str(x).split()[:max_words]))
+    defaults = [
+        "Standards-based FHIR connectivity",
+        "Cloud-ready API architecture",
+        "Compliance-ready CMS workflows",
+        "Better member and provider experience",
+    ]
     while len(out) < n:
-        out.append(["FHIR", "API", "Cloud", "Trust"][len(out) % 4])
+        out.append(defaults[len(out) % len(defaults)])
+    return out
+
+
+def _badges(post: dict[str, Any], n: int = 4) -> list[str]:
+    badges = list(post.get("badge_labels") or [])
+    if not badges:
+        badges = list(post.get("rail_labels") or ["FHIR", "CMS", "API", "Interop"])
+    out = [str(b)[:18] for b in badges[:n]]
+    while len(out) < min(n, 3):
+        out.append(["FHIR", "CMS", "HealthIT"][len(out)])
     return out
 
 
@@ -236,8 +257,8 @@ def pick_unique_concept(post: dict[str, Any]) -> dict[str, Any]:
             "background_theme": background,
             "layout": layout,
             "color_palette": palette,
-            "headline": _short_headline(post),
-            "visual_elements": _cards(post, 4),
+            "headline": _short_headline(post, 12),
+            "visual_elements": _cards(post, 4, max_words=10),
             "design_description": f"{layout} on {background} with palette {palette}",
             "linkedin_optimized": True,
         }
@@ -291,20 +312,32 @@ def _lay_executive_dashboard(img: Any, post: dict, fonts: dict, pal: dict, conce
 
     d = ImageDraw.Draw(img)
     headline = concept["headline"]
-    d.text((48, 48), "EXECUTIVE VIEW", font=fonts["tiny"], fill=pal["accent"])
-    y = 90
-    for line in _wrap(headline, fonts["hero"], WIDTH - 100, d)[:2]:
+    alert = (post.get("alert_label") or "EXECUTIVE VIEW").upper()[:26]
+    aw = int(d.textlength(alert, font=fonts["tiny"]) + 28)
+    d.rounded_rectangle([48, 40, 48 + aw, 78], radius=10, fill=pal["accent"])
+    d.text((62, 50), alert, font=fonts["tiny"], fill=(255, 255, 255))
+    y = 100
+    for line in _wrap(headline, fonts["hero"], WIDTH - 100, d)[:3]:
         d.text((48, y), line, font=fonts["hero"], fill=pal["ink"])
-        y += 54
+        y += 52
+    support = _short_support(post, 14)
+    if support:
+        d.text((48, y + 4), support[:60], font=fonts["body"], fill=pal["muted"])
+        y += 40
 
-    metrics = _cards(post, 4)
-    labels = ["Ready", "In Flight", "Risk", "Done"]
-    positions = [(48, 280), (560, 280), (48, 620), (560, 620)]
-    for (x, y), m, lab in zip(positions, metrics, labels):
-        _card(d, (x, y, x + 470, y + 280), pal, 22)
-        d.text((x + 36, y + 40), lab, font=fonts["small"], fill=pal["muted"])
-        d.text((x + 36, y + 100), m[:18], font=fonts["h2"], fill=pal["accent"])
-        d.rectangle([x + 36, y + 200, x + 200, y + 220], fill=pal["accent2"])
+    metrics = _cards(post, 4, max_words=8)
+    labels = ["Focus 01", "Focus 02", "Focus 03", "Focus 04"]
+    positions = [(48, y + 30), (560, y + 30), (48, y + 370), (560, y + 370)]
+    for (x, yy), m, lab in zip(positions, metrics, labels):
+        _card(d, (x, yy, x + 470, yy + 300), pal, 22)
+        d.text((x + 36, yy + 36), lab, font=fonts["small"], fill=pal["muted"])
+        for j, line in enumerate(_wrap(m, fonts["h3"], 400, d)[:3]):
+            d.text((x + 36, yy + 90 + j * 36), line, font=fonts["h3"], fill=pal["ink"])
+        d.rectangle([x + 36, yy + 240, x + 220, yy + 258], fill=pal["accent2"])
+
+    cta = " ".join((post.get("cta") or "Build · Test · Validate before go-live").split()[:12])
+    d.rounded_rectangle([48, HEIGHT - 120, WIDTH - 48, HEIGHT - 50], radius=14, fill=pal["accent"])
+    d.text((70, HEIGHT - 98), cta[:64], font=fonts["h3"], fill=(255, 255, 255))
     return img
 
 
@@ -312,17 +345,34 @@ def _lay_workflow_diagram(img: Any, post: dict, fonts: dict, pal: dict, concept:
     from PIL import ImageDraw
 
     d = ImageDraw.Draw(img)
-    d.text((48, 50), concept["headline"][:42], font=fonts["h1"], fill=pal["ink"])
-    steps = _cards(post, 4)
-    y = 200
+    alert = (post.get("alert_label") or "WORKFLOW").upper()[:22]
+    d.text((48, 40), alert, font=fonts["tiny"], fill=pal["accent"])
+    y = 70
+    for line in _wrap(concept["headline"], fonts["h1"], WIDTH - 100, d)[:2]:
+        d.text((48, y), line, font=fonts["h1"], fill=pal["ink"])
+        y += 48
+    support = _short_support(post, 14)
+    if support:
+        d.text((48, y), support[:64], font=fonts["body"], fill=pal["muted"])
+        y += 40
+
+    steps = _cards(post, 4, max_words=10)
+    y += 20
     for i, step in enumerate(steps):
-        _card(d, (100, y, WIDTH - 100, y + 140), pal, 20)
-        _icon_dot(d, (170, y + 70), pal["accent"], 28)
-        d.text((155, y + 55), str(i + 1), font=fonts["h3"], fill=(255, 255, 255))
-        d.text((230, y + 50), step[:28], font=fonts["h2"], fill=pal["ink"])
+        _card(d, (70, y, WIDTH - 70, y + 150), pal, 20)
+        _icon_dot(d, (140, y + 75), pal["accent"], 32)
+        d.text((128, y + 58), str(i + 1), font=fonts["h3"], fill=(255, 255, 255))
+        ty = y + 40
+        for line in _wrap(step, fonts["h3"], WIDTH - 260, d)[:2]:
+            d.text((200, ty), line, font=fonts["h3"], fill=pal["ink"])
+            ty += 34
         if i < len(steps) - 1:
-            d.line([(170, y + 140), (170, y + 180)], fill=pal["accent2"], width=4)
-        y += 200
+            d.line([(140, y + 150), (140, y + 180)], fill=pal["accent2"], width=4)
+        y += 185
+
+    cta = " ".join((post.get("cta") or "Move from demos to production-ready flows.").split()[:12])
+    d.rounded_rectangle([70, HEIGHT - 110, WIDTH - 70, HEIGHT - 45], radius=14, fill=pal["accent"])
+    d.text((90, HEIGHT - 90), cta[:60], font=fonts["h3"], fill=(255, 255, 255))
     return img
 
 
@@ -597,38 +647,82 @@ LAYOUT_RENDERERS = {
 
 
 def _overlay_on_photo(base: Any, post: dict[str, Any], fonts: dict[str, Any], concept: dict[str, Any]) -> Any:
-    """Readable enterprise typography over a photorealistic AI background."""
+    """Content-rich enterprise panel over a photorealistic AI background."""
     from PIL import Image, ImageDraw, ImageFilter
 
     img = base.convert("RGB").resize((WIDTH, HEIGHT))
-    scrim = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 0))
-    sd = ImageDraw.Draw(scrim)
-    # Soft top/bottom bands for text (not full black)
-    sd.rectangle([0, 0, WIDTH, 340], fill=(12, 28, 55, 150))
-    sd.rectangle([0, HEIGHT - 220, WIDTH, HEIGHT], fill=(12, 28, 55, 140))
-    scrim = scrim.filter(ImageFilter.GaussianBlur(1))
-    img = Image.alpha_composite(img.convert("RGBA"), scrim).convert("RGB")
+    overlay = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 0))
+    od = ImageDraw.Draw(overlay)
+
+    # Keep top photo visible; dense glass panel for content
+    od.rectangle([0, 0, WIDTH, 210], fill=(10, 24, 48, 120))
+    od.rounded_rectangle([28, 240, WIDTH - 28, HEIGHT - 28], radius=28, fill=(248, 251, 255, 235))
+    overlay = overlay.filter(ImageFilter.GaussianBlur(0.6))
+    img = Image.alpha_composite(img.convert("RGBA"), overlay).convert("RGB")
     d = ImageDraw.Draw(img)
 
-    headline = concept.get("headline") or _short_headline(post)
-    y = 70
-    for line in _wrap(headline, fonts["hero"], WIDTH - 100, d)[:3]:
-        d.text((48, y), line, font=fonts["hero"], fill=(255, 255, 255))
-        y += 56
+    navy = (15, 35, 70)
+    accent = (0, 120, 200)
+    muted = (80, 100, 125)
+    white = (255, 255, 255)
 
-    support = _short_support(post)
+    # Top eyebrow on photo
+    alert = (post.get("alert_label") or "HEALTH IT BRIEF").upper()[:28]
+    aw = int(d.textlength(alert, font=fonts["small"]) + 36)
+    d.rounded_rectangle([48, 48, 48 + aw, 96], radius=12, fill=accent)
+    d.text((66, 60), alert, font=fonts["small"], fill=white)
+
+    # Headline inside panel
+    headline = concept.get("headline") or _short_headline(post, 14)
+    y = 270
+    for line in _wrap(headline, fonts["h1"], WIDTH - 120, d)[:3]:
+        d.text((56, y), line, font=fonts["h1"], fill=navy)
+        y += 46
+
+    support = _short_support(post, 16)
     if support:
-        d.text((48, y + 8), support[:48], font=fonts["h3"], fill=(160, 220, 255))
+        for line in _wrap(support, fonts["body"], WIDTH - 120, d)[:2]:
+            d.text((56, y + 4), line, font=fonts["body"], fill=muted)
+            y += 30
+        y += 16
+    else:
+        y += 12
 
-    chips = _cards(post, 3)
-    bx = 48
-    by = HEIGHT - 130
-    for chip in chips:
-        label = chip[:16]
-        tw = int(d.textlength(label, font=fonts["small"]))
-        d.rounded_rectangle([bx, by, bx + tw + 36, by + 46], radius=14, fill=(0, 120, 200))
-        d.text((bx + 18, by + 12), label, font=fonts["small"], fill=(255, 255, 255))
-        bx += tw + 50
+    # Badge row
+    bx = 56
+    for badge in _badges(post, 4):
+        tw = int(d.textlength(badge, font=fonts["tiny"]))
+        d.rounded_rectangle([bx, y, bx + tw + 28, y + 36], radius=10, outline=accent, width=2)
+        d.text((bx + 14, y + 8), badge, font=fonts["tiny"], fill=accent)
+        bx += tw + 40
+    y += 56
+
+    # Insight cards (4)
+    bullets = _cards(post, 4, max_words=12)
+    for i, bullet in enumerate(bullets):
+        box_y = y
+        d.rounded_rectangle([56, box_y, WIDTH - 56, box_y + 110], radius=16, fill=(255, 255, 255), outline=(210, 222, 235), width=2)
+        d.ellipse([76, box_y + 32, 126, box_y + 82], fill=accent)
+        num = f"{i + 1}"
+        nw = d.textlength(num, font=fonts["h3"])
+        d.text((101 - nw / 2, box_y + 42), num, font=fonts["h3"], fill=white)
+        ty = box_y + 28
+        for line in _wrap(bullet, fonts["h3"], WIDTH - 220, d)[:2]:
+            d.text((150, ty), line, font=fonts["h3"], fill=navy)
+            ty += 32
+        y += 124
+
+    # CTA bar
+    cta = (post.get("cta") or "Standards create the contract. Delivery creates outcomes.").strip()
+    cta = " ".join(cta.split()[:14])
+    d.rounded_rectangle([56, HEIGHT - 150, WIDTH - 56, HEIGHT - 70], radius=16, fill=accent)
+    for line in _wrap(cta, fonts["h3"], WIDTH - 160, d)[:2]:
+        d.text((80, HEIGHT - 128), line, font=fonts["h3"], fill=white)
+        break
+
+    foot = (post.get("footer_note") or "FHIR · CMS · Interoperability · HealthIT")[:70]
+    tw = d.textlength(foot, font=fonts["tiny"])
+    d.text(((WIDTH - tw) / 2, HEIGHT - 52), foot, font=fonts["tiny"], fill=muted)
     return img
 
 

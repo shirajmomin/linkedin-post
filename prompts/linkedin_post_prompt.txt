@@ -66,16 +66,20 @@ Writing style:
 - Hashtags on the LAST line only (5–8 relevant tags)
 - NO author name. NO "I'm thrilled". NO emoji spam
 
-Also provide SHORT image text fields (the renderer picks layout/palette uniquely each run):
-- image_title: max 8 words (headline on graphic)
-- highlight / image_subtitle: max 6 words
-- bullets: 3–4 short labels (max 4 words each)
-- steps: optional 3–4 short process labels
+Also provide RICH image text fields (shown on the graphic — keep readable):
+- image_title: max 12 words (main headline)
+- highlight / image_subtitle: max 12 words (supporting line)
+- alert_label: short category pill (2–4 words), e.g. CMS-0057-F / PRIOR AUTH
+- intro: optional 1 short supporting sentence
+- bullets: 4 concrete insight lines (6–12 words each) — these appear as numbered cards
+- steps: optional 3–4 process labels when topic is workflow
+- badge_labels: 3–4 short chips (FHIR, CMS, PAS, Azure…)
 - left_label / right_label / left_points / right_points for comparison topics
-- badge_labels: 3–4 short chips
+- cta: one crisp takeaway line (max 14 words)
+- footer_note: short footer tags line
 
-Image design is rendered separately with LIGHT enterprise backgrounds only
-(never black / neon cyberpunk). Keep image copy minimal (about 10–20 words total).
+Image is rendered as a content-rich LinkedIn cover (photo or enterprise layout).
+Prefer concrete FHIR/CMS wording on the image — not vague slogans.
 
 Constraints:
 - Respect today_topic_hint when provided; otherwise choose a fresh category from the preferred list
