@@ -273,8 +273,8 @@ def pick_unique_concept(post: dict[str, Any]) -> dict[str, Any]:
         "background_theme": background,
         "layout": layout,
         "color_palette": palette,
-        "headline": _short_headline(post),
-        "visual_elements": _cards(post, 4),
+        "headline": _short_headline(post, 12),
+        "visual_elements": _cards(post, 4, max_words=10),
         "design_description": f"{layout} on {background} with palette {palette}",
         "linkedin_optimized": True,
     }
