@@ -78,54 +78,97 @@ def call_llm(system: str, user: str) -> dict[str, Any] | None:
 
 
 def draft_image_prompt(post: dict[str, Any]) -> str:
-    """Use the chat LLM to invent a unique photorealistic LinkedIn cover brief."""
-    topic = post.get("topic") or "healthcare interoperability"
+    """LLM writes a premium USA healthcare LinkedIn INFGRAPHIC prompt (text+cards)."""
+    from common import load_prompt
+
+    topic = post.get("topic") or "USA healthcare interoperability"
     title = post.get("image_title") or post.get("hook") or topic
-    system = (
-        "You design photorealistic LinkedIn cover photo briefs for healthcare technology leaders. "
-        "Return ONLY JSON: {\"prompt\": \"...\", \"scene\": \"...\"}. "
-        "The prompt must describe a REALISTIC photograph (not cartoon, not flat infographic, not neon cyberpunk, not pure black). "
-        "Bright or soft natural lighting, modern hospital / clinic / enterprise office / cloud ops center. "
-        "May include professionals collaborating, glass architecture, subtle holographic UI without readable text. "
-        "Absolutely no readable text, logos, watermarks, or brand names in the scene. "
-        "Vertical portrait composition for LinkedIn. Vary the scene every time."
-    )
+    alert = (post.get("alert_label") or "HEALTH IT").strip()
+    bullets = list(post.get("bullets") or [])[:4]
+    while len(bullets) < 4:
+        bullets.append(
+            [
+                "Coverage rules at order time",
+                "Avoid denial after care",
+                "Faster clinician decisions",
+                "Standards-based FHIR exchange",
+            ][len(bullets)]
+        )
+    badges = list(post.get("badge_labels") or ["CMS-0057-F", "Da Vinci", "FHIR"])[:4]
+    footer = post.get("footer_note") or " · ".join(badges)
+    highlight = post.get("highlight") or post.get("image_subtitle") or ""
+
+    try:
+        system = load_prompt("linkedin_image_prompt.txt")
+    except Exception:  # noqa: BLE001
+        system = (
+            "Design a premium light-enterprise USA healthcare LinkedIn infographic prompt. "
+            "Return JSON with key prompt. Include exact headline and 4 card texts."
+        )
+
     user = json.dumps(
         {
             "topic": topic,
-            "headline_context": title,
-            "bullets": list(post.get("bullets") or [])[:4],
-            "style_goal": "Looks like a premium corporate LinkedIn photo, not AI clipart",
-        }
+            "alert_badge_text": alert[:24],
+            "headline_text": " ".join(str(title).split()[:10]),
+            "support_text": " ".join(str(highlight).split()[:12]),
+            "card_01": " ".join(str(bullets[0]).split()[:8]),
+            "card_02": " ".join(str(bullets[1]).split()[:8]),
+            "card_03": " ".join(str(bullets[2]).split()[:8]),
+            "card_04": " ".join(str(bullets[3]).split()[:8]),
+            "footer_text": str(footer)[:70],
+            "must_include_exact_text": True,
+            "reference_style": (
+                "Like a senior health-tech designer: soft blue gradient, navy headline, "
+                "teal accents, white rounded cards with icons and 01-04 numbers, footer pill, "
+                "no black neon cyberpunk, LinkedIn-ready."
+            ),
+        },
+        indent=2,
     )
     result = call_llm(system, user)
     if result and (result.get("prompt") or "").strip():
         return str(result["prompt"]).strip()
-    return _fallback_photo_prompt(post)
+    return _fallback_infographic_prompt(post)
+
+
+def _fallback_infographic_prompt(post: dict[str, Any]) -> str:
+    title = " ".join(
+        (
+            post.get("image_title")
+            or post.get("hook")
+            or "Why check Prior Auth first"
+        ).split()[:10]
+    )
+    alert = (post.get("alert_label") or "CRD")[:20]
+    bullets = list(post.get("bullets") or [])[:4]
+    defaults = [
+        "Does this order need auth",
+        "Coverage rules at order time",
+        "Avoid denial after care",
+        "Faster clinician decisions",
+    ]
+    while len(bullets) < 4:
+        bullets.append(defaults[len(bullets)])
+    cards = [" ".join(str(b).split()[:8]) for b in bullets]
+    footer = post.get("footer_note") or "CMS-0057-F · Da Vinci · FHIR"
+    return (
+        f"Premium LinkedIn healthcare technology infographic, vertical portrait, "
+        f"soft light-blue gradient background with subtle wavy lines and faint dot grid, "
+        f"enterprise SaaS clinical design, navy and teal accents, white cards with soft shadows. "
+        f"Top center dark-blue rounded badge with white text '{alert}'. "
+        f"Large bold navy headline '{title}'. "
+        f"Four white rounded cards in a 2x2 grid labeled 01 to 04 with simple teal/navy line icons: "
+        f"01 '{cards[0]}', 02 '{cards[1]}', 03 '{cards[2]}', 04 '{cards[3]}'. "
+        f"Bottom white pill footer with text '{footer}'. "
+        f"Clean modern sans-serif typography, high readability, generous whitespace, "
+        f"no photorealistic people, no vendor logos, no watermarks, no black cyberpunk neon."
+    )
 
 
 def _fallback_photo_prompt(post: dict[str, Any]) -> str:
-    import random
-
-    topic = post.get("topic") or "FHIR healthcare interoperability"
-    title = post.get("image_title") or post.get("hook") or topic
-    scenes = [
-        "two healthcare technology architects reviewing a laptop in a bright modern hospital admin office, soft window light, shallow depth of field",
-        "clinician and IT lead collaborating at a clean white desk with a tablet, contemporary clinic interior, natural daylight",
-        "wide shot of a sunlit glass healthcare innovation hub with professionals walking, airy architecture, optimistic mood",
-        "close candid of a solution architect presenting on a large monitor in a bright conference room, corporate healthcare setting",
-        "modern data center aisle with cool soft lighting and a professional walking with a laptop, realistic photography not neon",
-        "nurse practitioner using a tablet in a bright hospital corridor with gentle bokeh, authentic documentary style",
-        "enterprise cloud operations floor with large windows and soft blue accent lighting, people collaborating, photorealistic",
-        "healthcare executive handshake in a bright lobby with glass and wood finishes, premium corporate photography",
-    ]
-    scene = random.choice(scenes)
-    return (
-        f"Photorealistic LinkedIn cover photo about {title}. Scene: {scene}. "
-        f"Theme: {topic}. Subtle soft cyan light trails suggesting secure data connectivity in the background, "
-        "no readable text, no logos, no watermarks, 85mm lens look, high detail skin and fabric, "
-        "magazine-quality healthcare technology editorial photography, vertical portrait composition."
-    )
+    # Kept for compatibility; prefer infographic path
+    return _fallback_infographic_prompt(post)
 
 
 def _download(url: str, timeout: int = 120) -> bytes | None:
@@ -146,15 +189,15 @@ def _openai_image(prompt: str) -> bytes | None:
     if not api_key:
         return None
 
-    model = env("OPENAI_IMAGE_MODEL", "dall-e-3")
-    size = env("OPENAI_IMAGE_SIZE", "1024x1792")
-    quality = env("OPENAI_IMAGE_QUALITY", "hd")
+    # gpt-image-1 is stronger for text-on-image infographics than dall-e-3
+    model = env("OPENAI_IMAGE_MODEL", "gpt-image-1")
+    size = env("OPENAI_IMAGE_SIZE", "1024x1536")
+    quality = env("OPENAI_IMAGE_QUALITY", "high")
     safe_prompt = (
         f"{prompt.strip()}\n\n"
-        "Camera: photorealistic DSLR photo, natural color, sharp focus, realistic people and materials. "
-        "Avoid: illustration, cartoon, flat vector infographic, neon cyberpunk, pure black background, "
-        "readable text, letters, logos, watermarks, UI screens with words. "
-        "Vertical LinkedIn portrait cover."
+        "Render as a finished LinkedIn infographic with crisp readable text exactly as specified. "
+        "Light enterprise healthcare design: soft blue/white background, navy + teal accents, "
+        "white cards, clean sans-serif type. No black neon cyberpunk. No watermarks. No vendor logos."
     )
 
     try:
@@ -172,8 +215,11 @@ def _openai_image(prompt: str) -> bytes | None:
             kwargs["quality"] = quality if quality in ("standard", "hd") else "hd"
             if size not in ("1024x1024", "1024x1792", "1792x1024"):
                 kwargs["size"] = "1024x1792"
-        elif quality:
+        else:
+            # gpt-image-* 
             kwargs["quality"] = quality if quality in ("low", "medium", "high", "auto") else "high"
+            if size not in ("1024x1024", "1024x1536", "1536x1024"):
+                kwargs["size"] = "1024x1536"
 
         resp = client.images.generate(**kwargs)
         item = resp.data[0] if resp.data else None
@@ -195,8 +241,8 @@ def _pollinations_image(prompt: str) -> bytes | None:
         return None
     clean = re.sub(r"\s+", " ", prompt.strip())[:400]
     clean = (
-        f"photorealistic LinkedIn healthcare technology cover photo, {clean}, "
-        "sharp focus, natural light, no text, no watermark, no logo, vertical"
+        f"premium LinkedIn healthcare infographic, light blue enterprise design, {clean}, "
+        "crisp readable text, white cards, navy teal accents, no watermark, vertical"
     )
     encoded = urllib.parse.quote(clean)
     seed = abs(hash(clean)) % 99999
@@ -209,7 +255,7 @@ def _pollinations_image(prompt: str) -> bytes | None:
 
 
 def generate_ai_image(prompt: str) -> bytes | None:
-    """Generate a photorealistic LinkedIn image via OpenAI (optional Pollinations)."""
+    """Generate a premium LinkedIn healthcare infographic via OpenAI (optional Pollinations)."""
     provider = env("IMAGE_PROVIDER", "openai").lower()
     if provider in ("", "none", "local", "stock", "pillow"):
         return None

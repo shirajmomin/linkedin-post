@@ -1,7 +1,8 @@
-"""Enterprise LinkedIn HealthTech infographics (1080x1350).
+"""Premium USA healthcare LinkedIn infographics (1080x1350).
 
-Light backgrounds only. Randomized layout + palette each run.
-Never black / neon cyberpunk HUD. No author name on the image.
+Flow: LLM writes an exact-text image brief → OpenAI gpt-image (full cover).
+Fallback: Pillow layouts (premium_insight_grid matches CRD sample quality).
+Light enterprise only — never black/neon cyberpunk. No author name on image.
 """
 
 from __future__ import annotations
@@ -86,6 +87,7 @@ PALETTES = {
 }
 
 LAYOUTS_META = [
+    "premium_insight_grid",
     "executive_dashboard",
     "workflow_diagram",
     "timeline_roadmap",
@@ -105,10 +107,12 @@ LAYOUTS_META = [
 
 # Topic → preferred layout families (still randomized within + uniqueness)
 TOPIC_LAYOUT_HINTS = {
-    "0057": ["compliance_checklist", "timeline_roadmap", "workflow_diagram", "api_ecosystem", "executive_dashboard"],
-    "prior": ["workflow_diagram", "process_flow", "compliance_checklist", "timeline_roadmap"],
-    "crd": ["workflow_diagram", "process_flow", "api_ecosystem"],
-    "fhir": ["architecture_blueprint", "api_ecosystem", "healthcare_network", "modern_card"],
+    "0057": ["premium_insight_grid", "compliance_checklist", "timeline_roadmap", "workflow_diagram", "api_ecosystem"],
+    "prior": ["premium_insight_grid", "workflow_diagram", "process_flow", "compliance_checklist"],
+    "crd": ["premium_insight_grid", "workflow_diagram", "process_flow", "api_ecosystem"],
+    "dtr": ["premium_insight_grid", "workflow_diagram", "compliance_checklist"],
+    "pas": ["premium_insight_grid", "workflow_diagram", "timeline_roadmap"],
+    "fhir": ["premium_insight_grid", "architecture_blueprint", "api_ecosystem", "healthcare_network"],
     "azure": ["architecture_blueprint", "executive_dashboard", "api_ecosystem", "kpi_metrics"],
     "dotnet": ["architecture_blueprint", "executive_dashboard", "modern_card", "hero_statistic"],
     ".net": ["architecture_blueprint", "executive_dashboard", "modern_card"],
@@ -627,6 +631,75 @@ def _lay_hero_statistic(img: Any, post: dict, fonts: dict, pal: dict, concept: d
     return img
 
 
+def _lay_premium_insight_grid(img: Any, post: dict, fonts: dict, pal: dict, concept: dict) -> Any:
+    """Sample-quality CRD-style infographic: badge + headline + 2x2 cards + footer pill."""
+    from PIL import Image, ImageDraw, ImageFilter
+
+    # Soft geometric accents
+    d = ImageDraw.Draw(img)
+    navy = (15, 40, 85)
+    teal = (20, 160, 170)
+    accent = pal.get("accent", (0, 120, 200))
+    for i in range(8):
+        y = 80 + i * 40
+        d.arc([-120, y, 220, y + 160], 0, 180, fill=(180, 210, 235), width=2)
+    for x in range(40, WIDTH, 28):
+        for y in range(40, 200, 28):
+            d.ellipse([x, y, x + 3, y + 3], fill=(190, 215, 235))
+
+    alert = (post.get("alert_label") or "CRD").upper()[:18]
+    aw = int(d.textlength(alert, font=fonts["small"]) + 48)
+    cx = WIDTH // 2
+    d.rounded_rectangle([cx - aw // 2, 70, cx + aw // 2, 125], radius=16, fill=navy)
+    tw = d.textlength(alert, font=fonts["small"])
+    d.text((cx - tw / 2, 85), alert, font=fonts["small"], fill=(255, 255, 255))
+
+    headline = concept.get("headline") or _short_headline(post, 10)
+    y = 170
+    for line in _wrap(headline, fonts["hero"], WIDTH - 120, d)[:3]:
+        tw = d.textlength(line, font=fonts["hero"])
+        d.text((cx - tw / 2, y), line, font=fonts["hero"], fill=navy)
+        y += 56
+    # teal underline
+    d.rectangle([cx - 60, y + 4, cx + 60, y + 10], fill=teal)
+
+    cards = _cards(post, 4, max_words=8)
+    positions = [(70, 420), (560, 420), (70, 780), (560, 780)]
+    icons = ["check", "shield", "doc", "clock"]
+    # Soft drop shadows under cards
+    shadow = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 0))
+    sd = ImageDraw.Draw(shadow)
+    for x, yy in positions:
+        sd.rounded_rectangle([x + 8, yy + 12, x + 458, yy + 312], radius=24, fill=(0, 40, 80, 40))
+    img = Image.alpha_composite(img.convert("RGBA"), shadow.filter(ImageFilter.GaussianBlur(10))).convert("RGB")
+    d = ImageDraw.Draw(img)
+    for i, ((x, yy), text) in enumerate(zip(positions, cards)):
+        d.rounded_rectangle([x, yy, x + 450, yy + 300], radius=24, fill=(255, 255, 255), outline=(220, 230, 240), width=2)
+        # icon circle
+        d.ellipse([x + 36, yy + 36, x + 110, yy + 110], outline=accent, width=4)
+        if icons[i] == "check":
+            d.line([(x + 55, yy + 75), (x + 70, yy + 90), (x + 95, yy + 55)], fill=teal, width=5)
+        elif icons[i] == "shield":
+            d.polygon([(x + 73, yy + 50), (x + 100, yy + 65), (x + 95, yy + 95), (x + 73, yy + 105), (x + 51, yy + 95), (x + 46, yy + 65)], outline=accent, width=3)
+        elif icons[i] == "doc":
+            d.rectangle([x + 58, yy + 52, x + 92, yy + 100], outline=accent, width=3)
+        else:
+            d.ellipse([x + 55, yy + 55, x + 95, yy + 95], outline=accent, width=3)
+            d.line([(x + 75, yy + 75), (x + 75, yy + 60)], fill=teal, width=3)
+        num = f"{i + 1:02d}"
+        d.text((x + 36, yy + 140), num, font=fonts["display"], fill=teal)
+        ty = yy + 210
+        for line in _wrap(text, fonts["h3"], 380, d)[:2]:
+            d.text((x + 36, ty), line, font=fonts["h3"], fill=navy)
+            ty += 32
+
+    foot = (post.get("footer_note") or " · ".join(_badges(post, 3)))[:56]
+    fw = int(d.textlength(foot, font=fonts["small"]) + 48)
+    d.rounded_rectangle([cx - fw // 2, HEIGHT - 130, cx + fw // 2, HEIGHT - 70], radius=28, fill=(255, 255, 255), outline=(210, 225, 235), width=2)
+    d.text((cx - d.textlength(foot, font=fonts["small"]) / 2, HEIGHT - 112), foot, font=fonts["small"], fill=navy)
+    return img
+
+
 LAYOUT_RENDERERS = {
     "executive_dashboard": _lay_executive_dashboard,
     "workflow_diagram": _lay_workflow_diagram,
@@ -643,6 +716,7 @@ LAYOUT_RENDERERS = {
     "infographic_wheel": _lay_infographic_wheel,
     "split_screen": _lay_split_screen,
     "hero_statistic": _lay_hero_statistic,
+    "premium_insight_grid": _lay_premium_insight_grid,
 }
 
 
@@ -726,8 +800,8 @@ def _overlay_on_photo(base: Any, post: dict[str, Any], fonts: dict[str, Any], co
     return img
 
 
-def _try_ai_photo(post: dict[str, Any], fonts: dict[str, Any], concept: dict[str, Any]) -> Any | None:
-    """LLM writes a unique photo brief → OpenAI image model → typography overlay."""
+def _try_ai_infographic(post: dict[str, Any], fonts: dict[str, Any], concept: dict[str, Any]) -> Any | None:
+    """LLM writes USA-healthcare infographic brief → OpenAI image model → finished cover."""
     from io import BytesIO
 
     from PIL import Image
@@ -739,35 +813,48 @@ def _try_ai_photo(post: dict[str, Any], fonts: dict[str, Any], concept: dict[str
     if provider in ("", "none", "local", "stock", "pillow"):
         return None
 
-    print("[image] Building photorealistic cover via LLM + image model…")
+    print("[image] Building premium USA healthcare LinkedIn infographic via LLM + image model…")
     prompt = draft_image_prompt(post)
     raw = generate_ai_image(prompt)
     if not raw:
         return None
-    base = Image.open(BytesIO(raw))
-    return _overlay_on_photo(base, post, fonts, concept)
+    base = Image.open(BytesIO(raw)).convert("RGB")
+    # Use AI art as the full design (it already contains text/cards). Only resize.
+    return base.resize((WIDTH, HEIGHT))
 
 
 def create_post_image(post: dict[str, Any], out_path: Path) -> Path:
-    """Prefer photorealistic AI image; fall back to light enterprise Pillow layouts."""
+    """Prefer premium AI infographic; fall back to sample-quality Pillow layouts."""
     global WIDTH, HEIGHT
     WIDTH, HEIGHT = 1080, 1350
 
     concept = pick_unique_concept(post)
     fonts = _fonts(1)
 
-    img = _try_ai_photo(post, fonts, concept)
+    img = _try_ai_infographic(post, fonts, concept)
     if img is not None:
-        source = "openai_photo"
-        concept["image_style"] = "photorealistic_ai_cover"
-        concept["design_description"] = "LLM scene brief + OpenAI image + typography overlay"
+        source = "openai_infographic"
+        concept["image_style"] = "premium_usa_healthcare_infographic"
+        concept["design_description"] = "LLM infographic brief + OpenAI image model (full cover)"
     else:
+        # Prefer sample-quality insight grid for PA/CRD-style topics when AI unavailable
+        t = f"{post.get('topic', '')} {post.get('image_title', '')}".lower()
+        if any(k in t for k in ("crd", "prior", "0057", "pas", "dtr", "fhir")):
+            concept["layout"] = "premium_insight_grid"
+            concept["background_theme"] = "light_blue_gradient"
+            concept["color_palette"] = "A"
+        elif concept["layout"] == "premium_insight_grid":
+            concept["background_theme"] = secrets.choice(
+                ["light_blue_gradient", "cloud_sky", "white_azure", "healthcare_cyan"]
+            )
+            if concept["color_palette"] not in ("A", "B", "E"):
+                concept["color_palette"] = "A"
         pal = PALETTES[concept["color_palette"]]
         img = _canvas(concept["background_theme"])
-        renderer = LAYOUT_RENDERERS[concept["layout"]]
+        renderer = LAYOUT_RENDERERS.get(concept["layout"]) or LAYOUT_RENDERERS["premium_insight_grid"]
         img = renderer(img, post, fonts, pal, concept)
-        source = "pillow_enterprise"
-        print("[image] Using Pillow enterprise layout (AI image unavailable)")
+        source = "pillow_premium"
+        print("[image] Using premium Pillow infographic (AI image unavailable)")
 
     if img.mode != "RGB":
         img = img.convert("RGB")

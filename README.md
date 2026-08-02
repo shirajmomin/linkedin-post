@@ -1,6 +1,6 @@
 # LinkedIn Post Agent
 
-Generates one FHIR / CMS Health IT LinkedIn draft (text + HUD image) and **emails** it to you.
+Generates one USA healthcare / FHIR / CMS LinkedIn draft (text + premium infographic) and **emails** it to you.
 
 You copy from email → post on LinkedIn. **Nothing is kept on disk** (no drafts/, no data/, no history).
 
@@ -31,9 +31,9 @@ Secrets: `SMTP_USER`, `SMTP_PASSWORD`, `EMAIL_TO` (optional AI keys + `AI_PROVID
 
 ```
 run_agent.py          # main agent (temp image → email → delete)
-linkedin_image.py     # HUD infographic
+linkedin_image.py     # premium USA healthcare infographic (AI + Pillow)
 ai.py / send_email.py / common.py
-profile.json / config.yaml / prompts/
+profile.json / config.yaml / prompts/   # post + image designer prompts
 .github/workflows/    # Actions
 docs/SCHEDULE.md      # reliable auto-schedule setup
 scripts/              # gh trigger helper
