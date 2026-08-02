@@ -596,17 +596,84 @@ LAYOUT_RENDERERS = {
 }
 
 
+def _overlay_on_photo(base: Any, post: dict[str, Any], fonts: dict[str, Any], concept: dict[str, Any]) -> Any:
+    """Readable enterprise typography over a photorealistic AI background."""
+    from PIL import Image, ImageDraw, ImageFilter
+
+    img = base.convert("RGB").resize((WIDTH, HEIGHT))
+    scrim = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 0))
+    sd = ImageDraw.Draw(scrim)
+    # Soft top/bottom bands for text (not full black)
+    sd.rectangle([0, 0, WIDTH, 340], fill=(12, 28, 55, 150))
+    sd.rectangle([0, HEIGHT - 220, WIDTH, HEIGHT], fill=(12, 28, 55, 140))
+    scrim = scrim.filter(ImageFilter.GaussianBlur(1))
+    img = Image.alpha_composite(img.convert("RGBA"), scrim).convert("RGB")
+    d = ImageDraw.Draw(img)
+
+    headline = concept.get("headline") or _short_headline(post)
+    y = 70
+    for line in _wrap(headline, fonts["hero"], WIDTH - 100, d)[:3]:
+        d.text((48, y), line, font=fonts["hero"], fill=(255, 255, 255))
+        y += 56
+
+    support = _short_support(post)
+    if support:
+        d.text((48, y + 8), support[:48], font=fonts["h3"], fill=(160, 220, 255))
+
+    chips = _cards(post, 3)
+    bx = 48
+    by = HEIGHT - 130
+    for chip in chips:
+        label = chip[:16]
+        tw = int(d.textlength(label, font=fonts["small"]))
+        d.rounded_rectangle([bx, by, bx + tw + 36, by + 46], radius=14, fill=(0, 120, 200))
+        d.text((bx + 18, by + 12), label, font=fonts["small"], fill=(255, 255, 255))
+        bx += tw + 50
+    return img
+
+
+def _try_ai_photo(post: dict[str, Any], fonts: dict[str, Any], concept: dict[str, Any]) -> Any | None:
+    """LLM writes a unique photo brief → OpenAI image model → typography overlay."""
+    from io import BytesIO
+
+    from PIL import Image
+
+    from ai import draft_image_prompt, generate_ai_image
+    from common import env
+
+    provider = env("IMAGE_PROVIDER", "openai").lower()
+    if provider in ("", "none", "local", "stock", "pillow"):
+        return None
+
+    print("[image] Building photorealistic cover via LLM + image model…")
+    prompt = draft_image_prompt(post)
+    raw = generate_ai_image(prompt)
+    if not raw:
+        return None
+    base = Image.open(BytesIO(raw))
+    return _overlay_on_photo(base, post, fonts, concept)
+
+
 def create_post_image(post: dict[str, Any], out_path: Path) -> Path:
-    """Render a unique light enterprise LinkedIn image every run."""
+    """Prefer photorealistic AI image; fall back to light enterprise Pillow layouts."""
     global WIDTH, HEIGHT
     WIDTH, HEIGHT = 1080, 1350
 
     concept = pick_unique_concept(post)
     fonts = _fonts(1)
-    pal = PALETTES[concept["color_palette"]]
-    img = _canvas(concept["background_theme"])
-    renderer = LAYOUT_RENDERERS[concept["layout"]]
-    img = renderer(img, post, fonts, pal, concept)
+
+    img = _try_ai_photo(post, fonts, concept)
+    if img is not None:
+        source = "openai_photo"
+        concept["image_style"] = "photorealistic_ai_cover"
+        concept["design_description"] = "LLM scene brief + OpenAI image + typography overlay"
+    else:
+        pal = PALETTES[concept["color_palette"]]
+        img = _canvas(concept["background_theme"])
+        renderer = LAYOUT_RENDERERS[concept["layout"]]
+        img = renderer(img, post, fonts, pal, concept)
+        source = "pillow_enterprise"
+        print("[image] Using Pillow enterprise layout (AI image unavailable)")
 
     if img.mode != "RGB":
         img = img.convert("RGB")
@@ -616,9 +683,8 @@ def create_post_image(post: dict[str, Any], out_path: Path) -> Path:
     _save_concept(concept)
 
     print(
-        f"[image] layout={concept['layout']} bg={concept['background_theme']} "
-        f"palette={concept['color_palette']} -> {out_path.name}"
+        f"[image] source={source} layout={concept['layout']} "
+        f"bg={concept['background_theme']} palette={concept['color_palette']} -> {out_path.name}"
     )
-    # Attach concept for callers/tests
     post["_image_concept"] = concept
     return out_path

@@ -77,6 +77,57 @@ def call_llm(system: str, user: str) -> dict[str, Any] | None:
     return None
 
 
+def draft_image_prompt(post: dict[str, Any]) -> str:
+    """Use the chat LLM to invent a unique photorealistic LinkedIn cover brief."""
+    topic = post.get("topic") or "healthcare interoperability"
+    title = post.get("image_title") or post.get("hook") or topic
+    system = (
+        "You design photorealistic LinkedIn cover photo briefs for healthcare technology leaders. "
+        "Return ONLY JSON: {\"prompt\": \"...\", \"scene\": \"...\"}. "
+        "The prompt must describe a REALISTIC photograph (not cartoon, not flat infographic, not neon cyberpunk, not pure black). "
+        "Bright or soft natural lighting, modern hospital / clinic / enterprise office / cloud ops center. "
+        "May include professionals collaborating, glass architecture, subtle holographic UI without readable text. "
+        "Absolutely no readable text, logos, watermarks, or brand names in the scene. "
+        "Vertical portrait composition for LinkedIn. Vary the scene every time."
+    )
+    user = json.dumps(
+        {
+            "topic": topic,
+            "headline_context": title,
+            "bullets": list(post.get("bullets") or [])[:4],
+            "style_goal": "Looks like a premium corporate LinkedIn photo, not AI clipart",
+        }
+    )
+    result = call_llm(system, user)
+    if result and (result.get("prompt") or "").strip():
+        return str(result["prompt"]).strip()
+    return _fallback_photo_prompt(post)
+
+
+def _fallback_photo_prompt(post: dict[str, Any]) -> str:
+    import random
+
+    topic = post.get("topic") or "FHIR healthcare interoperability"
+    title = post.get("image_title") or post.get("hook") or topic
+    scenes = [
+        "two healthcare technology architects reviewing a laptop in a bright modern hospital admin office, soft window light, shallow depth of field",
+        "clinician and IT lead collaborating at a clean white desk with a tablet, contemporary clinic interior, natural daylight",
+        "wide shot of a sunlit glass healthcare innovation hub with professionals walking, airy architecture, optimistic mood",
+        "close candid of a solution architect presenting on a large monitor in a bright conference room, corporate healthcare setting",
+        "modern data center aisle with cool soft lighting and a professional walking with a laptop, realistic photography not neon",
+        "nurse practitioner using a tablet in a bright hospital corridor with gentle bokeh, authentic documentary style",
+        "enterprise cloud operations floor with large windows and soft blue accent lighting, people collaborating, photorealistic",
+        "healthcare executive handshake in a bright lobby with glass and wood finishes, premium corporate photography",
+    ]
+    scene = random.choice(scenes)
+    return (
+        f"Photorealistic LinkedIn cover photo about {title}. Scene: {scene}. "
+        f"Theme: {topic}. Subtle soft cyan light trails suggesting secure data connectivity in the background, "
+        "no readable text, no logos, no watermarks, 85mm lens look, high detail skin and fabric, "
+        "magazine-quality healthcare technology editorial photography, vertical portrait composition."
+    )
+
+
 def _download(url: str, timeout: int = 120) -> bytes | None:
     try:
         req = urllib.request.Request(
@@ -96,21 +147,21 @@ def _openai_image(prompt: str) -> bytes | None:
         return None
 
     model = env("OPENAI_IMAGE_MODEL", "dall-e-3")
-    # Portrait LinkedIn-friendly sizes
     size = env("OPENAI_IMAGE_SIZE", "1024x1792")
-    quality = env("OPENAI_IMAGE_QUALITY", "standard")
+    quality = env("OPENAI_IMAGE_QUALITY", "hd")
     safe_prompt = (
         f"{prompt.strip()}\n\n"
-        "Strict rules: no readable text, letters, numbers, logos, watermarks, or brand names. "
-        "High-end corporate healthcare technology photography or clean editorial illustration. "
-        "Vertical LinkedIn cover composition."
+        "Camera: photorealistic DSLR photo, natural color, sharp focus, realistic people and materials. "
+        "Avoid: illustration, cartoon, flat vector infographic, neon cyberpunk, pure black background, "
+        "readable text, letters, logos, watermarks, UI screens with words. "
+        "Vertical LinkedIn portrait cover."
     )
 
     try:
         from openai import OpenAI
 
         client = OpenAI(api_key=api_key)
-        print(f"[image] Trying OpenAI {model} ({size})…")
+        print(f"[image] OpenAI image model={model} size={size} quality={quality}")
         kwargs: dict[str, Any] = {
             "model": model,
             "prompt": safe_prompt[:3900],
@@ -118,8 +169,7 @@ def _openai_image(prompt: str) -> bytes | None:
             "n": 1,
         }
         if model.startswith("dall-e"):
-            kwargs["quality"] = quality
-            # DALL·E 3 portrait
+            kwargs["quality"] = quality if quality in ("standard", "hd") else "hd"
             if size not in ("1024x1024", "1024x1792", "1792x1024"):
                 kwargs["size"] = "1024x1792"
         elif quality:
@@ -135,7 +185,7 @@ def _openai_image(prompt: str) -> bytes | None:
             return _download(item.url)
         return None
     except Exception as exc:  # noqa: BLE001
-        print(f"[image] OpenAI failed: {exc}")
+        print(f"[image] OpenAI image failed: {exc}")
         return None
 
 
@@ -145,8 +195,8 @@ def _pollinations_image(prompt: str) -> bytes | None:
         return None
     clean = re.sub(r"\s+", " ", prompt.strip())[:400]
     clean = (
-        f"professional LinkedIn cover photo, {clean}, "
-        "photorealistic, sharp focus, no text, no watermark, no logo, cinematic, vertical"
+        f"photorealistic LinkedIn healthcare technology cover photo, {clean}, "
+        "sharp focus, natural light, no text, no watermark, no logo, vertical"
     )
     encoded = urllib.parse.quote(clean)
     seed = abs(hash(clean)) % 99999
@@ -159,8 +209,8 @@ def _pollinations_image(prompt: str) -> bytes | None:
 
 
 def generate_ai_image(prompt: str) -> bytes | None:
-    """Generate a LinkedIn-ready image (OpenAI, optional Pollinations)."""
-    provider = env("IMAGE_PROVIDER", "local").lower()
+    """Generate a photorealistic LinkedIn image via OpenAI (optional Pollinations)."""
+    provider = env("IMAGE_PROVIDER", "openai").lower()
     if provider in ("", "none", "local", "stock", "pillow"):
         return None
 
@@ -168,6 +218,7 @@ def generate_ai_image(prompt: str) -> bytes | None:
         raw = _openai_image(prompt)
         if raw:
             return raw
+        print("[image] OpenAI unavailable — trying optional fallbacks")
         return _pollinations_image(prompt)
 
     if provider == "pollinations":
